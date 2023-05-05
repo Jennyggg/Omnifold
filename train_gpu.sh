@@ -8,7 +8,7 @@
 ##SBATCH --mem-per-cpu=10G
 #SBATCH --gres=gpu:1                     # request  for two GPU's on machine, this is total  amount of GPUs for job        
 #SBATCH --mem=40G                     # memory (per job)
-#SBATCH --time=1-12:00                   # time  in format DD-HH:MM
+#SBATCH --time=3-00:00:00                   # time  in format DD-HH:MM
 
 
 # each node has local /scratch space to be used during job run
@@ -106,6 +106,10 @@ echo CUDA_VISIBLE_DEVICES : $CUDA_VISIBLE_DEVICES
 #python mytrain.py -m multifold -u manyfold -mc Pythia8EPOS -data Pythia8CP5 -e 50 -ui 70 --weight-clip-max 10.0 --save-best-only --dogenreweight
 #python mytrain.py -m omnifold -u omnifold -mc Pythia8EPOS -data Pythia8CP5 --input-dim 3 -e 50 -ui 70 --save-best-only --weight-clip-max 10.0 --dosysweight
 
+
+
+
+
 #Unfold using Pythia8EPOS as MC to reweight to CP5 which is first weighted to EPOS at gen-level
 #python mytrain.py -m multifold -u manyfold -mc Pythia8EPOS -data Pythia8CP5 -e 50 -ui 70 --weight-clip-max 10.0 --save-best-only --dosysweight --dataweight gen_CP5_to_EPOS_multifold
 
@@ -123,14 +127,37 @@ echo CUDA_VISIBLE_DEVICES : $CUDA_VISIBLE_DEVICES
 #python mytrain.py -m multifold -u manyfold -mc Pythia8EPOS -data Pythia8EPOS_trkdrop -e 50 -ui 20 --weight-clip-max 10.0 --save-best-only --dosysweight
 #python mytrain.py -m omnifold -u omnifold -mc Pythia8EPOS -data Pythia8EPOS_trkdrop --input-dim 3 -e 50 -ui 20 --save-best-only --weight-clip-max 10.0 --dosysweight
 
-#Unfold using Pythia8EPOS as MC to unfold CP1
+#Unfold using Pythia8EPOS as MC to unfold CP1 (consider efficiency and acceptance, 4 ensembles)
 #python mytrain.py -m multifold -u manyfold -mc Pythia8EPOS -data Pythia8CP1 -e 50 -ui 20 --weight-clip-max 10.0 --save-best-only --eff-acc --ensemble 4
-python mytrain.py -m multifold -u manyfold -mc Pythia8EPOS -data Pythia8CP1 -e 50 -ui 20 --weight-clip-max 10.0 --save-best-only --ensemble 4 --dogenreweight
+
+#Unfold using Pythia8EPOS as MC to unfold CP5 (consider efficiency and acceptance, 4 ensembles)
+#python mytrain_tmp.py -m multifold -u manyfold -mc Pythia8EPOS -data Pythia8CP5 -e 50 -ui 1 --weight-clip-max 10.0 --save-best-only --eff-acc --ensemble 4
+
+
+#Reweight Pythia8EPOS to CP1 at gen-level
+#python mytrain.py -m multifold -u manyfold -mc Pythia8EPOS -data Pythia8CP1 -e 50 -ui 20 --weight-clip-max 10.0 --save-best-only --ensemble 4 --dogenreweight --results-path results_multifold_maxweight10_MCEPOS_unfoldCP1_1p3M_genweight_ensemble4_XSnorm 
 #python mytrain.py -m omnifold -u omnifold -mc Pythia8EPOS -data Pythia8CP1 --input-dim 3 -e 50 -ui 50 --save-best-only --weight-clip-max 10.0 --dosysweight
+
+# Unfold using EPOS as MC and EPOS reweighted to CP1 at gen-level as data
+#python mytrain.py -m multifold -u manyfold -mc Pythia8EPOS -data Pythia8EPOS -e 50 -ui 20 --weight-clip-max 10.0 --save-best-only --ensemble 4 --eff-acc  --dataweight gen_EPOS_to_CP1_multifold
 
 #python mytrain.py -m multifold -u manyfold -mc Pythia8EPOS -data Pythia8CP1 -e 50 -ui 70 --weight-clip-max 100.0 --save-best-only -sF 100 100
 #python mytrain.py -m omnifold -u omnifold -mc Pythia8EPOS -data Pythia8CP1 --input-dim 3 -e 50 -ui 70 --save-best-only --weight-clip-max 100.0 -sPhi 100 100 100 256
 #python mytrain.py -m omnifold -u omnifold -mc Pythia8EPOS -data Pythia8CP1 --input-dim 3 -e 50 -ui 70 --save-best-only --weight-clip-max 100.0 -sF 100 100
+
+#Reweight CP1 to EPOS at gen-level
+#python mytrain.py -m multifold -u manyfold -mc Pythia8CP1 -data Pythia8EPOS -e 50 -ui 20 --weight-clip-max 10.0 --save-best-only --ensemble 4 --dogenreweight --results-path results_multifold_maxweight10_MCCP1_unfoldEPOS_1p3M_genweight_ensemble4_XSnorm
+
+#Reweight EPOS to CP1(gen-weighted to EPOS) at gen-reco-level
+#python mytrain.py -m multifold -u manyfold -mc Pythia8EPOS -data Pythia8CP1 -e 50 -ui 20 --weight-clip-max 10.0 --save-best-only --ensemble 4 --eff-acc --dosysweight --dataweight gen_CP1_to_EPOS_multifold --results-path results_multifold_maxweight10_MCEPOS_unfoldCP1genweight2EPOS_1p3M_sysweight_ensemble4_XSnorm
+
+#Reweight EPOS to CP5 at gen-level
+#python mytrain.py -m multifold -u manyfold -mc Pythia8EPOS -data Pythia8CP5 -e 50 -ui 20 --weight-clip-max 10.0 --save-best-only --ensemble 4 --dogenreweight --results-path results_multifold_maxweight10_MCEPOS_unfoldCP5_1p3M_genweight_ensemble4_XSnorm 
+
+#Reweight EPOS to CP5(gen-weighted to EPOS) at gen-reco-level
+python mytrain.py -m multifold -u manyfold -mc Pythia8EPOS -data Pythia8CP5 -e 50 -ui 20 --weight-clip-max 10.0 --save-best-only --ensemble 4 --eff-acc --dosysweight --dataweight gen_CP5_to_EPOS_multifold --results-path results_multifold_maxweight10_MCEPOS_unfoldCP5genweight2EPOS_1p3M_sysweight_ensemble4_XSnorm
+#Reweight CP5 to EPOS at gen-level
+#python mytrain.py -m multifold -u manyfold -mc Pythia8CP5 -data Pythia8EPOS -e 50 -ui 20 --weight-clip-max 10.0 --save-best-only --ensemble 4 --dogenreweight --results-path results_multifold_maxweight10_MCCP5_unfoldEPOS_1p3M_genweight_ensemble4_XSnorm 
 
 #Unfold using EPOS as MC to unfold data
 #python mytrain.py -m multifold -u manyfold -mc Pythia8EPOS -data Zerobias -e 50 -ui 20 --weight-clip-max 10.0 --save-best-only -i 5
