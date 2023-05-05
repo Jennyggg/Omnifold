@@ -10,33 +10,42 @@ import numpy as np
 # default paths
 MACHINES = {
     'multifold': {
-        'data_path': '/work/jinw/omnifold/OmniFold/preselect',
-        'results_path': '/work/jinw/omnifold/OmniFold/results_multifold_maxweight_MCCP1_tuneES'
+        'data_path': '/pnfs/psi.ch/cms/trivcat/store/user/jinw/NPZ/',
+        'results_path': '/work/jinw/omnifold/OmniFold/results_multifold_maxweight10_MCEPOS_unfoldCP5_1p3M_ensemble4_testnch'
     },
     'omnifold': {
         'data_path': '/work/jinw/omnifold/OmniFold/preselect',
-        'results_path': '/work/jinw/omnifold/OmniFold/results_omnifold_maxweight_MCCP1_tuneES'
+        'results_path': '/work/jinw/omnifold/OmniFold/results_omnifold_maxweight10_MCEPOS_unfoldCP1_1p3M_sysweight'
     },
     'unifold':{
         'data_path': '/work/jinw/omnifold/OmniFold/preselect',
-        'results_path': '/work/jinw/omnifold/OmniFold/results_unifold_maxweight_MCCP1_tuneES'
+        'results_path': '/work/jinw/omnifold/OmniFold/results_unifold_maxweight_MCCP5_more'
     },
 }
 
 # default filenames
 FILENAMES = {
-    'Zerobias': 'flatTuple_ZeroBias_2018lowPU_new_hltv6_iso_nparticle.npz',
-    'Pythia8CP5': 'flatTuple_MB_trk_noPU_new.npz',
-    'Pythia8CP1': 'flatTuple_MB_trk_noPU_new_CP1.npz',
-    'Pythia8CP1_tuneES': 'flatTuple_MB_trk_noPU_new_CP1_tuneES.npz',
+    'Zerobias': ['flatTuple_ZeroBias_2018lowPU_new_hltv6_ext1-3.npz','flatTuple_ZeroBias_2018lowPU_new_hltv6_ext1-4.npz','flatTuple_ZeroBias_2018lowPU_new_hltv6_ext1-5.npz','flatTuple_ZeroBias_2018lowPU_new_hltv6_ext1-6.npz'],
+    'Pythia8CP5': ['/pnfs/psi.ch/cms/trivcat/store/user/jinw/NPZ/flatTuple_MB_trk_noPU_new_CP5_A.npz','/pnfs/psi.ch/cms/trivcat/store/user/jinw/NPZ/flatTuple_MB_trk_noPU_new_CP5_B.npz','/pnfs/psi.ch/cms/trivcat/store/user/jinw/NPZ/flatTuple_MB_trk_noPU_new_CP5_C.npz','/pnfs/psi.ch/cms/trivcat/store/user/jinw/NPZ/flatTuple_MB_trk_noPU_new_CP5_D.npz'],
+    #'Pythia8CP5': 'flatTuple_MB_trk_noPU_new.npz',
+    #'Pythia8CP1': ['flatTuple_MB_trk_noPU_new_CP1_merge.npz','flatTuple_MB_trk_noPU_new_CP1_F.npz'],
+    'Pythia8CP1': ['/pnfs/psi.ch/cms/trivcat/store/user/jinw/NPZ/flatTuple_MB_trk_noPU_new_CP1_merge_ABCDE.npz','/pnfs/psi.ch/cms/trivcat/store/user/jinw/NPZ/flatTuple_MB_trk_noPU_new_CP1_F.npz'],
+    #'Pythia8CP1': 'flatTuple_MB_trk_noPU_new_CP1_merge.npz',
+    'Pythia8CP1_tuneES': 'flatTuple_MB_trk_noPU_new_CP1_tuneES_add.npz',
     'Pythia8CP1_tuneNch': 'flatTuple_MB_trk_noPU_new_CP1_tuneNch.npz',
     'Pythia8CP5_trkdrop': 'flatTuple_MB_trk_noPU_new_trackdrop.npz',
-    'Pythia8CP1_tuneES_trkdrop': 'flatTuple_MB_trk_noPU_new_CP1_tuneES_trackdrop.npz',
+    'Pythia8CP1_tuneES_trkdrop': 'flatTuple_MB_trk_noPU_new_CP1_tuneES_trkdrop.npz',
+    #'Pythia8EPOS': ['flatTuple_MB_trk_noPU_new_EPOS_merge.npz','flatTuple_MB_trk_noPU_new_EPOS_G.npz'],
+    'Pythia8EPOS': ['/pnfs/psi.ch/cms/trivcat/store/user/jinw/NPZ/flatTuple_MB_trk_noPU_new_EPOS_merge_ABCDEG.npz'],
+    #'Pythia8EPOS': 'flatTuple_MB_trk_noPU_new_EPOS_merge.npz',
+    'Pythia8EPOS_trkdrop': ['flatTuple_MB_trk_noPU_new_EPOS_trkdrop.npz','flatTuple_MB_trk_noPU_new_EPOS_trkdrop_B.npz','flatTuple_MB_trk_noPU_new_EPOS_trkdrop_C.npz','flatTuple_MB_trk_noPU_new_EPOS_trkdrop_D.npz','flatTuple_MB_trk_noPU_new_EPOS_trkdrop_E.npz','flatTuple_MB_trk_noPU_new_EPOS_trkdrop_G.npz'],
     'Pythia8CP5_part1': 'flatTuple_MB_trk_noPU_new_1.npz',
     'Pythia8CP5_part2': 'flatTuple_MB_trk_noPU_new_2.npz',
     'Pythia8CP1_tuneES_part1': 'flatTuple_MB_trk_noPU_new_CP1_tuneES_1.npz',
     'Pythia8CP1_tuneES_part2': 'flatTuple_MB_trk_noPU_new_CP1_tuneES_2.npz',
 }
+
+
 '''
 SYSWEIGHTS = {
     'omnifold':{
@@ -55,6 +64,8 @@ SYSWEIGHTS = {
       'MCCP1_tuneES_MCstat':'',
     },
 }
+'''
+
 '''
 SYSWEIGHTS = {
     'omnifold':{
@@ -73,6 +84,42 @@ SYSWEIGHTS = {
       'MCCP1_tuneES_MCstat':'',
     },
 }
+'''
+
+SYSWEIGHTS = {
+    'omnifold':{
+      'MCCP1_tuneES_CP5':'/work/jinw/omnifold/OmniFold/results_omnifold_maxweight_MCEPOS_unfoldCP5',
+      'MCCP1_tuneES_trkdrop':'/work/jinw/omnifold/OmniFold/results_omnifold_maxweight_MCEPOS_unfoldEPOStrkdrop',
+      'MCCP1_tuneES_MCstat':'',
+    },
+    'multifold':{
+      'CP1_gen':'/work/jinw/omnifold/OmniFold/results_multifold_maxweight10_MCEPOS_unfoldCP1_1p3M_genweight_ensemble4/weights/ManyFold_DNN_Rep-0.npy',
+      'CP1_migration':'/work/jinw/omnifold/OmniFold/results_multifold_maxweight10_MCEPOS_unfoldCP1genweight2EPOS_1p3M_sysweight_ensemble4/weights/ManyFold_DNN_Rep-0.npy',
+      'CP1_gen':'/work/jinw/omnifold/OmniFold/results_multifold_maxweight10_MCEPOS_unfoldCP5_1p3M_genweight_ensemble4/weights/ManyFold_DNN_Rep-0.npy',
+      'CP1_migration':'/work/jinw/omnifold/OmniFold/results_multifold_maxweight10_MCEPOS_unfoldCP5genweight2EPOS_1p3M_sysweight_ensemble4/weights/ManyFold_DNN_Rep-0.npy',
+      'MCstat':'',
+    },
+    'unifold':{
+      'MCCP1_tuneES_CP5':'/work/jinw/omnifold/OmniFold/results_unifold_maxweight_MCCP1_tuneES_unfoldCP5',
+      'MCCP1_tuneES_trkdrop':'/work/jinw/omnifold/OmniFold/results_unifold_maxweight_MCCP1_tuneES_unfoldtrkdrop',
+      'MCCP1_tuneES_MCstat':'',
+    },
+}
+
+PREWEIGHTS = {
+    'omnifold':'/work/jinw/omnifold/OmniFold/results_multifold_maxweight_MCCP1_tuneES_mass_ntrk/weights/ManyFold_DNN_Rep-0.npy',
+    'multifold':'/work/jinw/omnifold/OmniFold/results_multifold_maxweight_MCCP1_tuneES_mass_ntrk/weights/ManyFold_DNN_Rep-0.npy',
+    'unifold':'/work/jinw/omnifold/OmniFold/results_multifold_maxweight_MCCP1_tuneES_mass_ntrk/weights/ManyFold_DNN_Rep-0.npy'
+}
+
+DATAWEIGHT = {
+    'gen_CP5_to_EPOS_multifold':'/work/jinw/omnifold/OmniFold/results_multifold_maxweight10_MCCP5_unfoldEPOS_1p3M_genweight/weights/ManyFold_DNN_Rep-0.npy',
+    'gen_EPOS_to_CP1_multifold':'/work/jinw/omnifold/OmniFold/results_multifold_maxweight10_MCEPOS_unfoldCP1_1p3M_genweight_ensemble4_fix/weights/ManyFold_DNN_Rep-0.npy',
+    'gen_CP1_to_EPOS_multifold':'/work/jinw/omnifold/OmniFold/results_multifold_maxweight10_MCCP1_unfoldEPOS_1p3M_genweight_ensemble4/weights/ManyFold_DNN_Rep-0.npy',
+    'gen_CP5_to_EPOS_multifold':'/work/jinw/omnifold/OmniFold/results_multifold_maxweight10_MCCP5_unfoldEPOS_1p3M_genweight_ensemble4/weights/ManyFold_DNN_Rep-0.npy'
+}
+
+
 
 
 def main(arg_list):
@@ -102,10 +149,22 @@ def main(arg_list):
     for i in range(args.start_iter, args.max_iter):
         if args.unfolding == 'omnifold':
             args.name = name.format(args.omnifold_arch, i)
-            train_omnifold(i)
+            if args.dosysweight:
+              train_omnifold_fitsys(i)
+            elif args.dogenreweight:
+              train_omnifold_fitgen(i)
+            else:
+              train_omnifold(i)
         elif args.unfolding == 'manyfold':
             args.name = name.format(i)
-            train_manyfold(i)
+            if args.dosysweight:
+              train_manyfold_fitsys(i)
+            elif args.dogenreweight:
+              train_manyfold_fitgen(i)
+            elif args.eff_acc:
+              train_manyfold_acceptance_efficiency(i)
+            else:  
+              train_manyfold(i)
         elif args.unfolding == 'unifold':
             args.name = name + '_Rep-{}'.format(i)
             train_unifold(i)
@@ -140,6 +199,7 @@ def construct_parser(args):
     parser.add_argument('--save-full-model', action='store_true')
     parser.add_argument('--val-frac', '-val', type=float, default=0.2)
     parser.add_argument('--verbose', '-v', type=int, choices=[0, 1, 2], default=2)
+    parser.add_argument('--ensemble', type=int,default=1)
 
     # training settings
     parser.add_argument('--max-iter', '-i', type=int, default=1)
@@ -151,6 +211,16 @@ def construct_parser(args):
 
     parser.add_argument('--MCbootstrap', action='store_true')
     parser.add_argument('--MCbsseed', type=int,default=1)
+ 
+    parser.add_argument('--preweight', action='store_true')
+
+    parser.add_argument('--dosysweight', action='store_true')
+    parser.add_argument('--dogenreweight',action='store_true')
+
+    parser.add_argument('--dataweight',default=None,choices=[None,'gen_CP5_to_EPOS_multifold','gen_EPOS_to_CP1_multifold','gen_CP1_to_EPOS_multifold','gen_CP5_to_EPOS_multifold'])
+
+    parser.add_argument('--eff-acc',action='store_true')
+
     p_args = parser.parse_args(args=args)
     p_args.data_path = MACHINES[p_args.machine]['data_path']
     p_args.results_path = MACHINES[p_args.machine]['results_path']
@@ -162,11 +232,26 @@ def train_omnifold(i):
     start = time.time()
 
     # load datasets
+    if  isinstance(FILENAMES[args.dataset_mc],list):
+      mc_preproc_list = [np.load(os.path.join(args.data_path, set_mc), allow_pickle=True,encoding="latin1") for set_mc in FILENAMES[args.dataset_mc]]
+      gen=np.concatenate([mc[str('charged')] for mc in mc_preproc_list],axis=0)
+      sim=np.concatenate([mc[str('tracks')] for mc in mc_preproc_list],axis=0)
+      del mc_preproc_list
+    else:
+      mc_preproc = np.load(os.path.join(args.data_path, FILENAMES[args.dataset_mc]), allow_pickle=True,encoding="latin1")
+      gen, sim = mc_preproc[str('charged')], mc_preproc[str('tracks')]
+      del mc_preproc
+    if  isinstance(FILENAMES[args.dataset_data],list):
+      real_preproc_list = [np.load(os.path.join(args.data_path, set_data), allow_pickle=True,encoding="latin1") for set_data in FILENAMES[args.dataset_data]]
+      data=np.concatenate([data[str('tracks')] for data in real_preproc_list],axis=0)
+      del real_preproc_list
+    else:
+      real_preproc = np.load(os.path.join(args.data_path, FILENAMES[args.dataset_data]), allow_pickle=True,encoding="latin1")
+      data=real_preproc[str('tracks')]
+      del real_preproc
 
-    mc_preproc = np.load(os.path.join(args.data_path, FILENAMES[args.dataset_mc]), allow_pickle=True)
-    real_preproc = np.load(os.path.join(args.data_path, FILENAMES[args.dataset_data]), allow_pickle=True)
-    gen, sim, data = mc_preproc[str('charged')], mc_preproc[str('tracks')], real_preproc[str('tracks')]
-    del mc_preproc, real_preproc
+    real_pass_reco=(np.isnan(data)==False)
+    data=data[real_pass_reco]
 
     # pad datasets
     start = time.time()
@@ -186,10 +271,17 @@ def train_omnifold(i):
     X_gen = (np.concatenate((gen, gen)))
     Y_gen = ef.utils.to_categorical(np.concatenate((np.ones(len(gen)), np.zeros(len(gen)))))
     del gen
+
+    X_det[np.isnan(np.sum(X_det,axis=1))==False]=(X_det[np.isnan(np.sum(X_det,axis=1))==False] - np.mean(X_det[np.isnan(np.sum(X_det,axis=1))==False], axis=0))/np.std(X_det[np.isnan(np.sum(X_det,axis=1))==False], axis=0)
+    X_det[np.isnan(X_det)]=-1.0
+    X_gen[np.isnan(np.sum(X_gen,axis=1))==False]=(X_gen[np.isnan(np.sum(X_gen,axis=1))==False] - np.mean(X_gen[np.isnan(np.sum(X_gen,axis=1))==False], axis=0))/np.std(X_gen[np.isnan(np.sum(X_gen,axis=1))==False], axis=0)
+    X_gen[np.isnan(X_gen)]=-1.0
+
     # specify the model and the training parameters
     model1_fp = os.path.join(args.results_path, 'models',  args.name + '_Iter-{}-Step1')
     model2_fp = os.path.join(args.results_path, 'models', args.name + '_Iter-{}-Step2')
     Model = getattr(ef.archs, args.omnifold_arch)
+    print("PFN size",args.Phi_sizes,args.F_sizes)
     det_args = {'input_dim': args.input_dim, 'Phi_sizes': args.Phi_sizes, 'F_sizes': args.F_sizes, 
                 'patience': args.patience, 'filepath': model1_fp, 'save_weights_only': args.save_full_model, 
                 'modelcheck_opts': {'save_best_only': args.save_best_only, 'verbose': 0}}
@@ -202,25 +294,178 @@ def train_omnifold(i):
     # apply the omnifold technique to this one dimensional space
     ndata, nsim = np.count_nonzero(Y_det[:,1]), np.count_nonzero(Y_det[:,0])
     wdata = np.ones(ndata)
+    if args.dataweight is not None:
+      dataweight = np.load(DATAWEIGHT[args.dataweight],allow_pickle=True)
+      wdata *= dataweight[-1][real_pass_reco]
     if args.bootstrap:
       np.random.seed(args.bsseed)
       wdata=wdata*np.random.poisson(1.0,len(wdata))
       wdata_path=os.path.join(args.results_path, 'weights', args.name+"_dataweight.npy")
       np.save(wdata_path,wdata)
-    winit = ndata/nsim*np.ones(nsim)
+    winit = np.sum(wdata)/nsim*np.ones(nsim)
     if args.MCbootstrap:
       np.random.seed(args.MCbsseed)
       for sys in SYSWEIGHTS[args.machine].keys():
         if SYSWEIGHTS[args.machine][sys] != '':
-          wMC_weight = np.load(SYSWEIGHTS[args.machine][sys]+'/weights/OmniFold_PFN_Rep-0.npy',allow_pickle=True)
-          winit *= np.power(wMC_weight[-1],np.random.normal())
+          wMC_weight = np.load(SYSWEIGHTS[args.machine][sys],allow_pickle=True)[-1]
+          wMC_weight *= len(wMC_weight)/np.sum(wMC_weight)
+          winit *= np.power(wMC_weight,np.random.standard_normal(len(wMC_weight)))    
         else:
           winit *= np.random.poisson(1.0,nsim)
+
+    if args.preweight:
+      preweightMC = np.load(PREWEIGHTS[args.machine],allow_pickle=True)
+      winit = preweightMC[-1]
+
     ws = omnifold.omnifold(X_gen, Y_gen, X_det, Y_det, wdata, winit, (Model, det_args), (Model, mc_args), fitargs, 
                   val=args.val_frac, it=args.unfolding_iterations, trw_ind=args.step2_ind,
                   weights_filename=os.path.join(args.results_path, 'weights', args.name),
-                  delete_global_arrays=True)
+                  delete_global_arrays=True,ensemble=args.ensemble)
 
+    print('Finished OmniFold {} in {:.3f}s'.format(i, time.time() - start))
+
+
+def train_omnifold_fitsys(i):
+
+    start = time.time()
+
+    insert_gen_tag1=np.vectorize(lambda x: np.insert(x,3,1.0,axis=-1),otypes=[np.ndarray])
+    insert_reco_tag0=np.vectorize(lambda x: np.insert(x,3,0.0,axis=-1),otypes=[np.ndarray])
+    merge_ndarray=np.vectorize(lambda x,y:np.concatenate((x,y),axis=1),otypes=[np.ndarray])
+
+    if  isinstance(FILENAMES[args.dataset_mc],list):
+      #mc_preproc_list = [np.load(os.path.join(args.data_path, set_mc), allow_pickle=True,encoding="latin1") for set_mc in FILENAMES[args.dataset_mc]]
+      gen=[]
+      sim=[]
+      for set_mc in FILENAMES[args.dataset_mc]:
+        with np.load(os.path.join(args.data_path, set_mc),allow_pickle=True,encoding="latin1") as mc:
+          gen.append(insert_gen_tag1(mc[str('charged')]))
+          sim.append(insert_reco_tag0(mc[str('tracks')]))
+          print("Loaded: ",os.path.join(args.data_path, set_mc))
+      gen=np.concatenate(gen)
+      sim=np.concatenate(sim)
+      #gen=insert_gen_tag1(np.concatenate([mc[str('charged')] for mc in mc_preproc_list],axis=0))
+      #sim=insert_reco_tag0(np.concatenate([mc[str('tracks')] for mc in mc_preproc_list],axis=0))
+      #del mc_preproc_list
+    else:
+      mc_preproc = np.load(os.path.join(args.data_path, FILENAMES[args.dataset_mc]), allow_pickle=True,encoding="latin1")
+      gen, sim = insert_gen_tag1(mc_preproc[str('charged')]), insert_reco_tag0(mc_preproc[str('tracks')])
+      del mc_preproc
+
+    if  isinstance(FILENAMES[args.dataset_data],list):
+      #real_preproc_list = [np.load(os.path.join(args.data_path, set_data), allow_pickle=True, encoding="latin1") for set_data in FILENAMES[args.dataset_data]]
+      data=[]
+      truth=[]
+      for set_data in FILENAMES[args.dataset_data]:
+        with np.load(os.path.join(args.data_path, set_data), allow_pickle=True, encoding="latin1") as pseudodata:
+          data.append(insert_reco_tag0(pseudodata[str('tracks')]))
+          truth.append(insert_gen_tag1(pseudodata[str('charged')]))
+          print("Loaded: ",os.path.join(args.data_path, set_data))
+      data=np.concatenate(data)
+      truth=np.concatenate(truth)
+      #data=insert_reco_tag0(np.concatenate([data[str('tracks')] for data in real_preproc_list],axis=0))
+      #truth=insert_gen_tag1(np.concatenate([data[str('charged')] for data in real_preproc_list],axis=0))
+      #del real_preproc_list
+    else:
+      real_preproc = np.load(os.path.join(args.data_path, FILENAMES[args.dataset_data]), allow_pickle=True,encoding="latin1")
+      data, truth=insert_reco_tag0(real_preproc[str('tracks')]), insert_gen_tag1(real_preproc[str('charged')])
+      del real_preproc
+
+    # pad datasets
+    sim_data_max_length = max(get_max_length(sim), get_max_length(data))
+    gen_truth_max_length = max(get_max_length(gen),get_max_length(truth))
+    gen, sim = pad_events(gen,max_length=gen_truth_max_length), pad_events(sim, max_length=sim_data_max_length)
+    truth, data = pad_events(truth, max_length=gen_truth_max_length), pad_events(data, max_length=sim_data_max_length)
+    print('Done padding in {:.3f}s'.format(time.time() - start))
+
+    # detector/sim setup
+    global X, Y
+    X = (np.concatenate((np.concatenate((data,truth),axis=1), np.concatenate((sim,gen),axis=1)), axis=0))
+    Y = ef.utils.to_categorical(np.concatenate((np.ones(len(data)), np.zeros(len(sim)))))
+    del data, sim, truth, gen
+
+    X[np.isnan(np.sum(X,axis=1))==False]=(X[np.isnan(np.sum(X,axis=1))==False] - np.mean(X[np.isnan(np.sum(X,axis=1))==False], axis=0))/np.std(X[np.isnan(np.sum(X,axis=1))==False], axis=0)
+    X[np.isnan(X)]=-1.0
+
+    model_fp = os.path.join(args.results_path, 'models',  args.name + '_Iter-{}-Step1')
+    Model = getattr(ef.archs, args.omnifold_arch)
+    print("PFN size",args.Phi_sizes,args.F_sizes)
+    det_mc_args = {'input_dim': args.input_dim+1, 'Phi_sizes': args.Phi_sizes, 'F_sizes': args.F_sizes,
+                'patience': args.patience, 'filepath': model_fp, 'save_weights_only': args.save_full_model,
+                'modelcheck_opts': {'save_best_only': args.save_best_only, 'verbose': 0}}
+    fitargs = {'batch_size': args.batch_size, 'epochs': args.epochs, 'verbose': args.verbose,
+               'weight_clip_min': args.weight_clip_min, 'weight_clip_max': args.weight_clip_max}
+
+    ndata, nsim = np.count_nonzero(Y[:,1]), np.count_nonzero(Y[:,0])
+    wdata = np.ones(ndata)
+    if args.dataweight is not None:
+      dataweight = np.load(DATAWEIGHT[args.dataweight],allow_pickle=True)
+      wdata *= dataweight[-1]
+    winit = np.sum(wdata)/nsim*np.ones(nsim)
+    ws = omnifold.omnifold_sys(X, Y, wdata, winit, (Model, det_mc_args),
+                  fitargs, val=args.val_frac, trw_ind=args.step2_ind,
+                  weights_filename=os.path.join(args.results_path, 'weights', args.name),ensemble=args.ensemble)
+    print('Finished OmniFold {} in {:.3f}s'.format(i, time.time() - start))
+
+def train_omnifold_fitgen(i):
+
+    start = time.time()
+
+    if  isinstance(FILENAMES[args.dataset_mc],list):
+      gen=[]
+      for set_mc in FILENAMES[args.dataset_mc]:
+        with np.load(os.path.join(args.data_path, set_mc),allow_pickle=True,encoding="latin1") as mc:
+          gen.append(mc[str('charged')])
+          print("Loaded: ",os.path.join(args.data_path, set_mc))
+      gen=np.concatenate(gen)
+    else:
+      mc_preproc = np.load(os.path.join(args.data_path, FILENAMES[args.dataset_mc]), allow_pickle=True,encoding="latin1")
+      gen = mc_preproc[str('charged')]
+      del mc_preproc
+
+    if  isinstance(FILENAMES[args.dataset_data],list):
+      truth=[]
+      for set_data in FILENAMES[args.dataset_data]:
+        with np.load(os.path.join(args.data_path, set_data), allow_pickle=True, encoding="latin1") as pseudodata:
+          truth.append(pseudodata[str('charged')])
+          print("Loaded: ",os.path.join(args.data_path, set_data))
+      truth=np.concatenate(truth)
+    else:
+      real_preproc = np.load(os.path.join(args.data_path, FILENAMES[args.dataset_data]), allow_pickle=True,encoding="latin1")
+      truth = real_preproc[str('charged')]
+      del real_preproc
+
+    # pad datasets
+    gen_truth_max_length = max(get_max_length(gen),get_max_length(truth))
+    gen = pad_events(gen,max_length=gen_truth_max_length)
+    truth = pad_events(truth, max_length=gen_truth_max_length)
+    print('Done padding in {:.3f}s'.format(time.time() - start))
+
+    # detector/sim setup
+    global X, Y
+    X = np.concatenate((truth, gen), axis=0)
+    Y = ef.utils.to_categorical(np.concatenate((np.ones(len(truth)), np.zeros(len(gen)))))
+    del truth, gen
+    X[np.isnan(np.sum(X,axis=1))==False]=(X[np.isnan(np.sum(X,axis=1))==False] - np.mean(X[np.isnan(np.sum(X,axis=1))==False], axis=0))/np.std(X[np.isnan(np.sum(X,axis=1))==False], axis=0)
+    X[np.isnan(X)]=-1.0
+    model_fp = os.path.join(args.results_path, 'models',  args.name + '_Iter-{}-Step1')
+    Model = getattr(ef.archs, args.omnifold_arch)
+    print("PFN size",args.Phi_sizes,args.F_sizes)
+    det_mc_args = {'input_dim': args.input_dim, 'Phi_sizes': args.Phi_sizes, 'F_sizes': args.F_sizes,
+                'patience': args.patience, 'filepath': model_fp, 'save_weights_only': args.save_full_model,
+                'modelcheck_opts': {'save_best_only': args.save_best_only, 'verbose': 0}}
+    fitargs = {'batch_size': args.batch_size, 'epochs': args.epochs, 'verbose': args.verbose,
+               'weight_clip_min': args.weight_clip_min, 'weight_clip_max': args.weight_clip_max}
+
+    ndata, nsim = np.count_nonzero(Y[:,1]), np.count_nonzero(Y[:,0])
+    wdata = np.ones(ndata)
+    if args.dataweight is not None:
+      dataweight = np.load(DATAWEIGHT[args.dataweight],allow_pickle=True)
+      wdata *= dataweight[-1]
+    winit = np.sum(wdata)/nsim*np.ones(nsim)
+    ws = omnifold.omnifold_sys(X, Y, wdata, winit, (Model, det_mc_args),
+                  fitargs, val=args.val_frac, trw_ind=args.step2_ind,
+                  weights_filename=os.path.join(args.results_path, 'weights', args.name),ensemble=args.ensemble)
     print('Finished OmniFold {} in {:.3f}s'.format(i, time.time() - start))
 
 def load_obs():
@@ -282,13 +527,34 @@ def train_manyfold(i):
     recokeys = ['reco_ntrk','reco_spherocity','reco_thrust','reco_broaden','reco_transversespherocity','reco_transversethrust','reco_isotropy','reco_pt']
     genkeys = ['gen_nch','gen_spherocity','gen_thrust','gen_broaden','gen_transversespherocity','gen_transversethrust','gen_isotropy','gen_pt']
 
+    #recokeys = ['reco_mass','reco_ntrk']
+    #genkeys = ['gen_mass','gen_nch']
+
+    #recokeys = ['reco_spherocity','reco_thrust','reco_broaden','reco_transversespherocity','reco_transversethrust','reco_isotropy']
+    #genkeys = ['gen_spherocity','gen_thrust','gen_broaden','gen_transversespherocity','gen_transversethrust','gen_isotropy']
+
     start = time.time()
     print('ManyFolding')
 
-    mc_preproc = np.load(os.path.join(args.data_path, FILENAMES[args.dataset_mc]), allow_pickle=True)
-    real_preproc = np.load(os.path.join(args.data_path, FILENAMES[args.dataset_data]), allow_pickle=True)
-    gen, sim, data = [mc_preproc['charged']], mc_preproc['tracks'], real_preproc['tracks']
-    
+    if  isinstance(FILENAMES[args.dataset_mc],list):
+      mc_preproc_list = [np.load(os.path.join(args.data_path, set_mc), allow_pickle=True,encoding="latin1") for set_mc in FILENAMES[args.dataset_mc]]
+      mc_preproc = { k: np.concatenate([mc[k] for mc in mc_preproc_list],axis=0) 
+                     for k in recokeys+genkeys+['charged']+['tracks']}
+      del mc_preproc_list
+    else:
+      mc_preproc = np.load(os.path.join(args.data_path, FILENAMES[args.dataset_mc]), allow_pickle=True,encoding="latin1")
+    if  isinstance(FILENAMES[args.dataset_data],list):
+      real_preproc_list = [np.load(os.path.join(args.data_path, set_data), allow_pickle=True, encoding="latin1") for set_data in FILENAMES[args.dataset_data]]
+      real_preproc = { k: np.concatenate([data[k] for data in real_preproc_list],axis=0)
+                     for k in recokeys+['tracks']}
+      del real_preproc_list
+    else:
+      real_preproc = np.load(os.path.join(args.data_path, FILENAMES[args.dataset_data]), allow_pickle=True,encoding="latin1")
+
+    #gen, sim, data = [mc_preproc['charged']], mc_preproc['tracks'], real_preproc['tracks']
+    real_pass_reco=(np.isnan(real_preproc['reco_ntrk'])==False)
+    for k in real_preproc.keys():
+      real_preproc[k]=real_preproc[k][real_pass_reco]
     # detector/sim setup
     X_det = np.asarray([np.concatenate((real_preproc[obkey], mc_preproc[obkey])) for obkey in recokeys]).T
     Y_det = ef.utils.to_categorical(np.concatenate((np.ones(len(real_preproc['reco_ntrk'])), np.zeros(len(mc_preproc['reco_ntrk'])))))
@@ -299,13 +565,16 @@ def train_manyfold(i):
     del mc_preproc, real_preproc
 
     # standardize the inputs
-    X_det = (X_det - np.mean(X_det, axis=0))/np.std(X_det, axis=0)
-    X_gen = (X_gen - np.mean(X_gen, axis=0))/np.std(X_gen, axis=0)
+    X_det[np.isnan(np.sum(X_det,axis=1))==False]=(X_det[np.isnan(np.sum(X_det,axis=1))==False] - np.mean(X_det[np.isnan(np.sum(X_det,axis=1))==False], axis=0))/np.std(X_det[np.isnan(np.sum(X_det,axis=1))==False], axis=0)
+    X_det[np.isnan(X_det)]=-1.0
+    X_gen[np.isnan(np.sum(X_gen,axis=1))==False]=(X_gen[np.isnan(np.sum(X_gen,axis=1))==False] - np.mean(X_gen[np.isnan(np.sum(X_gen,axis=1))==False], axis=0))/np.std(X_gen[np.isnan(np.sum(X_gen,axis=1))==False], axis=0)
+    X_gen[np.isnan(X_gen)]=-1.0
 
     # specify the model and the training parameters
     model1_fp = os.path.join(args.results_path, 'models', args.name + '_Iter-{}-Step1')
     model2_fp = os.path.join(args.results_path, 'models', args.name + '_Iter-{}-Step2')
     Model = ef.archs.DNN
+    print("DNN size",args.F_sizes)
     det_args = {'input_dim': len(recokeys), 'dense_sizes': args.F_sizes, 
                 'patience': args.patience, 'filepath': model1_fp, 'save_weights_only': args.save_full_model, 
                 'modelcheck_opts': {'save_best_only': args.save_best_only, 'verbose': 0}}
@@ -318,37 +587,317 @@ def train_manyfold(i):
     # apply the unifold technique to this one dimensional space
     ndata, nsim = np.count_nonzero(Y_det[:,1]), np.count_nonzero(Y_det[:,0])
     wdata = np.ones(ndata)
+    if args.dataweight is not None:
+      dataweight = np.load(DATAWEIGHT[args.dataweight],allow_pickle=True)
+      wdata *= dataweight[-1][real_pass_reco]
     if args.bootstrap:
       np.random.seed(args.bsseed)
       wdata=wdata*np.random.poisson(1.0,len(wdata))
       wdata_path=os.path.join(args.results_path, 'weights', args.name+"_dataweight.npy")
       np.save(wdata_path,wdata)
-    winit = ndata/nsim*np.ones(nsim)
+    winit = np.sum(wdata)/nsim*np.ones(nsim)
     if args.MCbootstrap:
       np.random.seed(args.MCbsseed)
       for sys in SYSWEIGHTS[args.machine].keys():
         if SYSWEIGHTS[args.machine][sys] != '':
-          wMC_weight = np.load(SYSWEIGHTS[args.machine][sys]+'/weights/ManyFold_DNN_Rep-0.npy',allow_pickle=True)
-          winit *= np.power(wMC_weight[-1],np.random.normal())
+          wMC_weight = np.load(SYSWEIGHTS[args.machine][sys],allow_pickle=True)[-1]
+          wMC_weight *= len(wMC_weight)/np.sum(wMC_weight)
+          winit *= np.power(wMC_weight,np.random.standard_normal(len(wMC_weight)))
         else:
           winit *= np.random.poisson(1.0,nsim)
+    if args.preweight:
+      preweightMC = np.load(PREWEIGHTS[args.machine],allow_pickle=True)
+      winit = preweightMC[-1]    
     ws = omnifold.omnifold(X_gen, Y_gen, X_det, Y_det, wdata, winit, (Model, det_args), (Model, mc_args), 
                   fitargs, val=args.val_frac, it=args.unfolding_iterations, trw_ind=args.step2_ind,
-                  weights_filename=os.path.join(args.results_path, 'weights', args.name))
+                  weights_filename=os.path.join(args.results_path, 'weights', args.name),ensemble=args.ensemble)
 
     print('Finished ManyFold {} in {:.3f}s\n'.format(i, time.time() - start))
+    print("Weight in ",os.path.join(args.results_path, 'weights', args.name))
+
+
+def train_manyfold_acceptance_efficiency(i):
+
+
+    # which observables to include in manyfold
+
+    #recokeys = ['reco_ntrk','reco_spherocity','reco_thrust','reco_broaden','reco_transversespherocity','reco_transversethrust','reco_isotropy','reco_pt']
+    #genkeys = ['gen_nch','gen_spherocity','gen_thrust','gen_broaden','gen_transversespherocity','gen_transversethrust','gen_isotropy','gen_pt']
+    recokeys = ['reco_ntrk']
+    genkeys = ['gen_nch']
+
+    start = time.time()
+    print('ManyFolding')
+
+    if  isinstance(FILENAMES[args.dataset_mc],list):
+      mc_preproc_list = [np.load(os.path.join(args.data_path, set_mc), allow_pickle=True,encoding="latin1") for set_mc in FILENAMES[args.dataset_mc]]
+      mc_preproc = { k: np.concatenate([mc[k] for mc in mc_preproc_list],axis=0)
+                     for k in recokeys+genkeys+['charged']+['tracks']}
+      del mc_preproc_list
+    else:
+      mc_preproc = np.load(os.path.join(args.data_path, FILENAMES[args.dataset_mc]), allow_pickle=True,encoding="latin1")
+
+    if  isinstance(FILENAMES[args.dataset_data],list):
+      real_preproc_list = [np.load(os.path.join(args.data_path, set_data), allow_pickle=True, encoding="latin1") for set_data in FILENAMES[args.dataset_data]]
+      real_preproc = { k: np.concatenate([data[k] for data in real_preproc_list],axis=0)
+                     for k in recokeys+['tracks']}
+      del real_preproc_list
+    else:
+      real_preproc = np.load(os.path.join(args.data_path, FILENAMES[args.dataset_data]), allow_pickle=True,encoding="latin1")
+
+    real_pass_reco=(np.isnan(real_preproc['reco_ntrk'])==False)
+    for k in real_preproc.keys():
+      real_preproc[k]=real_preproc[k][real_pass_reco]
+
+    mc_pass_reco=(np.isnan(mc_preproc['reco_ntrk'])==False)
+    print(mc_preproc['reco_ntrk'],len(mc_preproc['reco_ntrk']))
+    print(np.isnan(mc_preproc['reco_ntrk']),len(np.isnan(mc_preproc['reco_ntrk'])))
+    print(np.isnan(mc_preproc['reco_ntrk'])==False,len(np.isnan(mc_preproc['reco_ntrk'])==False))
+    print(mc_pass_reco)
+    mc_pass_gen=(mc_preproc['gen_nch']>2)
+    print(mc_preproc['gen_nch'],len(mc_preproc['gen_nch']))
+    print(mc_preproc['gen_nch']>2,len(mc_preproc['gen_nch']>2))
+    print(mc_pass_gen)
+    print("mc_pass_reco len",len(mc_pass_reco))
+    print("mc_pass_reco gen",len(mc_pass_gen))
+    # detector/sim setup
+    X_det = np.asarray([np.concatenate((real_preproc[obkey], mc_preproc[obkey])) for obkey in recokeys]).T
+    Y_det = ef.utils.to_categorical(np.concatenate((np.ones(len(real_preproc['reco_ntrk'])), np.zeros(len(mc_preproc['reco_ntrk'])))))
+    det_pass_reco=np.concatenate((np.ones(len(real_preproc['reco_ntrk']),dtype=bool),mc_pass_reco))
+    det_pass_gen=np.concatenate((np.ones(len(real_preproc['reco_ntrk']),dtype=bool),mc_pass_gen))
+    print("det_pass_reco len",len(det_pass_reco))
+    print("det_pass_gen len",len(det_pass_gen))
+
+    X_det_acc_reweight = np.asarray([np.concatenate((mc_preproc[obkey], mc_preproc[obkey])) for obkey in recokeys]).T
+    Y_det_acc_reweight = ef.utils.to_categorical(np.concatenate((np.ones(len(mc_preproc['reco_ntrk'])), np.zeros(len(mc_preproc['reco_ntrk'])))))
+    det_pass_reco_acc_reweight=np.concatenate((mc_pass_reco,mc_pass_reco))
+    det_pass_gen_acc_reweight=np.concatenate((mc_pass_gen,mc_pass_gen))
+
+
+
+    # gen setup
+    X_gen = np.asarray([np.concatenate((mc_preproc[obkey], mc_preproc[obkey])) for obkey in genkeys]).T
+    Y_gen = ef.utils.to_categorical(np.concatenate((np.ones(len(mc_preproc['gen_nch'])), np.zeros(len(mc_preproc['gen_nch'])))))
+    gen_pass_gen = np.concatenate((mc_pass_gen,mc_pass_gen))
+    gen_pass_reco = np.concatenate((mc_pass_reco,mc_pass_reco))
+    del mc_preproc, real_preproc
+
+    # standardize the inputs
+    X_det[det_pass_reco] = (X_det[det_pass_reco] - np.mean(X_det[det_pass_reco], axis=0))/np.std(X_det[det_pass_reco], axis=0)
+    X_gen[gen_pass_gen] = (X_gen[gen_pass_gen] - np.mean(X_gen[gen_pass_gen], axis=0))/np.std(X_gen[gen_pass_gen], axis=0)
+    X_det_acc_reweight[det_pass_reco_acc_reweight] = (X_det_acc_reweight[det_pass_reco_acc_reweight] - np.mean(X_det_acc_reweight[det_pass_reco_acc_reweight], axis=0))/np.std(X_det_acc_reweight[det_pass_reco_acc_reweight], axis=0)
+
+    # specify the model and the training parameters
+    model1_fp = os.path.join(args.results_path, 'models', args.name + '_Iter-{}-Step1')
+    model1b_fp = os.path.join(args.results_path, 'models', args.name + '_Iter-{}-Step1b')
+    model2_fp = os.path.join(args.results_path, 'models', args.name + '_Iter-{}-Step2')
+    model2b_fp = os.path.join(args.results_path, 'models', args.name + '_Iter-{}-Step2b')
+    Model = ef.archs.DNN
+    print("DNN size",args.F_sizes)
+    det_args = {'input_dim': len(recokeys), 'dense_sizes': args.F_sizes,
+                'patience': args.patience, 'filepath': model1_fp, 'save_weights_only': args.save_full_model,
+                'modelcheck_opts': {'save_best_only': args.save_best_only, 'verbose': 0}}
+    mc_args_1b = {'input_dim': len(genkeys), 'dense_sizes': args.F_sizes,
+               'patience': args.patience, 'filepath': model1b_fp, 'save_weights_only': args.save_full_model,
+               'modelcheck_opts': {'save_best_only': args.save_best_only, 'verbose': 0}}
+    mc_args = {'input_dim': len(genkeys), 'dense_sizes': args.F_sizes,
+               'patience': args.patience, 'filepath': model2_fp, 'save_weights_only': args.save_full_model,
+               'modelcheck_opts': {'save_best_only': args.save_best_only, 'verbose': 0}}
+    det_args_2b = {'input_dim': len(recokeys), 'dense_sizes': args.F_sizes,
+                'patience': args.patience, 'filepath': model2b_fp, 'save_weights_only': args.save_full_model,
+                'modelcheck_opts': {'save_best_only': args.save_best_only, 'verbose': 0}}
+    fitargs = {'batch_size': args.batch_size, 'epochs': args.epochs, 'verbose': args.verbose,
+               'weight_clip_min': args.weight_clip_min, 'weight_clip_max': args.weight_clip_max}
+
+    # apply the unifold technique to this one dimensional space
+    ndata, nsim = np.count_nonzero(Y_det[:,1]), np.count_nonzero(Y_det[:,0])
+    wdata = np.ones(ndata)
+    if args.dataweight is not None:
+      dataweight = np.load(DATAWEIGHT[args.dataweight],allow_pickle=True)
+      wdata *= dataweight[-1][real_pass_reco]
+    if args.bootstrap:
+      np.random.seed(args.bsseed)
+      wdata=wdata*np.random.poisson(1.0,len(wdata))
+      wdata_path=os.path.join(args.results_path, 'weights', args.name+"_dataweight.npy")
+      np.save(wdata_path,wdata)
+    winit = np.sum(wdata)/nsim*np.ones(nsim)
+    if args.MCbootstrap:
+      np.random.seed(args.MCbsseed)
+      for sys in SYSWEIGHTS[args.machine].keys():
+        if SYSWEIGHTS[args.machine][sys] != '':
+          wMC_weight = np.load(SYSWEIGHTS[args.machine][sys],allow_pickle=True)[-1]
+          wMC_weight *= len(wMC_weight)/np.sum(wMC_weight)
+          winit *= np.power(wMC_weight,np.random.standard_normal(len(wMC_weight)))
+        else:
+          winit *= np.random.poisson(1.0,nsim)
+    if args.preweight:
+      preweightMC = np.load(PREWEIGHTS[args.machine],allow_pickle=True)
+      winit = preweightMC[-1]
+
+    ws = omnifold.omnifold_acceptance_efficiency(X_gen, Y_gen, X_det, Y_det,X_det_acc_reweight,Y_det_acc_reweight, wdata, winit, gen_pass_gen,gen_pass_reco, det_pass_gen,det_pass_reco,det_pass_gen_acc_reweight,det_pass_reco_acc_reweight,
+                  (Model, det_args), (Model, mc_args),(Model, mc_args_1b),(Model, det_args_2b),
+                  fitargs, val=args.val_frac, it=args.unfolding_iterations, trw_ind=args.step2_ind,
+                  weights_filename=os.path.join(args.results_path, 'weights', args.name),ensemble=args.ensemble)
+
+    print('Finished ManyFold {} in {:.3f}s\n'.format(i, time.time() - start))
+    print("Weight in ",os.path.join(args.results_path, 'weights', args.name))
+
+
+
+
+
+
+
+def train_manyfold_fitsys(i):
+
+
+    # which observables to include in manyfold
+
+    recokeys = ['reco_ntrk','reco_spherocity','reco_thrust','reco_broaden','reco_transversespherocity','reco_transversethrust','reco_isotropy','reco_pt']
+    genkeys = ['gen_nch','gen_spherocity','gen_thrust','gen_broaden','gen_transversespherocity','gen_transversethrust','gen_isotropy','gen_pt']
+    #recokeys = ['reco_ntrk']
+    #genkeys = ['gen_nch']
+
+    start = time.time()
+    print('ManyFolding')
+
+    if  isinstance(FILENAMES[args.dataset_mc],list):
+      mc_preproc_list = [np.load(os.path.join(args.data_path, set_mc), allow_pickle=True,encoding="latin1") for set_mc in FILENAMES[args.dataset_mc]]
+      mc_preproc = { k: np.concatenate([mc[k] for mc in mc_preproc_list],axis=0)
+                     for k in recokeys+genkeys}
+      del mc_preproc_list
+    else:
+      mc_preproc = np.load(os.path.join(args.data_path, FILENAMES[args.dataset_mc]), allow_pickle=True,encoding="latin1")
+    if  isinstance(FILENAMES[args.dataset_data],list):
+      real_preproc_list = [np.load(os.path.join(args.data_path, set_data), allow_pickle=True, encoding="latin1") for set_data in FILENAMES[args.dataset_data]]
+      real_preproc = { k: np.concatenate([data[k] for data in real_preproc_list],axis=0)
+                     for k in recokeys+genkeys}
+      del real_preproc_list
+    else:
+      real_preproc = np.load(os.path.join(args.data_path, FILENAMES[args.dataset_data]), allow_pickle=True,encoding="latin1")
+
+    X = np.asarray([np.concatenate((real_preproc[obkey], mc_preproc[obkey])) for obkey in recokeys+genkeys]).T
+    Y = ef.utils.to_categorical(np.concatenate((np.ones(len(real_preproc['reco_ntrk'])), np.zeros(len(mc_preproc['reco_ntrk'])))))
+    print(X.shape,Y.shape)
+    del mc_preproc, real_preproc
+
+    # standardize the inputs
+    X[np.isnan(np.sum(X,axis=1))==False]=(X[np.isnan(np.sum(X,axis=1))==False] - np.mean(X[np.isnan(np.sum(X,axis=1))==False], axis=0))/np.std(X[np.isnan(np.sum(X,axis=1))==False], axis=0)
+    X[np.isnan(X)]=-1.0
+    # specify the model and the training parameters
+    model_fp = os.path.join(args.results_path, 'models', args.name + '_Iter-{}-Step1')
+    Model = ef.archs.DNN
+    print("DNN size",args.F_sizes)
+    det_mc_args = {'input_dim': len(recokeys+genkeys), 'dense_sizes': args.F_sizes,
+                'patience': args.patience, 'filepath': model_fp, 'save_weights_only': args.save_full_model,
+                'modelcheck_opts': {'save_best_only': args.save_best_only, 'verbose': 0}}
+    fitargs = {'batch_size': args.batch_size, 'epochs': args.epochs, 'verbose': args.verbose,
+               'weight_clip_min': args.weight_clip_min, 'weight_clip_max': args.weight_clip_max}
+
+    ndata, nsim = np.count_nonzero(Y[:,1]), np.count_nonzero(Y[:,0])
+    wdata = np.ones(ndata)
+    if args.dataweight is not None:
+      dataweight = np.load(DATAWEIGHT[args.dataweight],allow_pickle=True)
+      wdata *= dataweight[-1]
+    print("data with weight ",DATAWEIGHT[args.dataweight])
+    winit = np.sum(wdata)/nsim*np.ones(nsim)
+    ws = omnifold.omnifold_sys(X, Y, wdata, winit, (Model, det_mc_args),
+                  fitargs, val=args.val_frac, trw_ind=args.step2_ind,
+                  weights_filename=os.path.join(args.results_path, 'weights', args.name),ensemble=args.ensemble)
+
+    print('Finished ManyFold {} in {:.3f}s\n'.format(i, time.time() - start))
+    print("Weight in ",os.path.join(args.results_path, 'weights', args.name))
+
+
+def train_manyfold_fitgen(i):
+
+
+    # which observables to include in manyfold
+
+    #recokeys = ['reco_ntrk','reco_spherocity','reco_thrust','reco_broaden','reco_transversespherocity','reco_transversethrust','reco_isotropy','reco_pt']
+    #genkeys = ['gen_nch','gen_spherocity','gen_thrust','gen_broaden','gen_transversespherocity','gen_transversethrust','gen_isotropy','gen_pt']
+    genkeys = ['gen_nch']
+
+
+    start = time.time()
+    print('ManyFolding')
+
+    if  isinstance(FILENAMES[args.dataset_mc],list):
+      mc_preproc_list = [np.load(os.path.join(args.data_path, set_mc), allow_pickle=True,encoding="latin1") for set_mc in FILENAMES[args.dataset_mc]]
+      mc_preproc = { k: np.concatenate([mc[k] for mc in mc_preproc_list],axis=0)
+                     for k in genkeys}
+      del mc_preproc_list
+    else:
+      mc_preproc = np.load(os.path.join(args.data_path, FILENAMES[args.dataset_mc]), allow_pickle=True,encoding="latin1")
+    if  isinstance(FILENAMES[args.dataset_data],list):
+      real_preproc_list = [np.load(os.path.join(args.data_path, set_data), allow_pickle=True, encoding="latin1") for set_data in FILENAMES[args.dataset_data]]
+      real_preproc = { k: np.concatenate([data[k] for data in real_preproc_list],axis=0)
+                     for k in genkeys}
+      del real_preproc_list
+    else:
+      real_preproc = np.load(os.path.join(args.data_path, FILENAMES[args.dataset_data]), allow_pickle=True,encoding="latin1")
+
+    X = np.asarray([np.concatenate((real_preproc[obkey], mc_preproc[obkey])) for obkey in genkeys]).T
+    Y = ef.utils.to_categorical(np.concatenate((np.ones(len(real_preproc['gen_nch'])), np.zeros(len(mc_preproc['gen_nch'])))))
+    print(X.shape,Y.shape)
+    del mc_preproc, real_preproc
+
+    # standardize the inputs
+    X[np.isnan(np.sum(X,axis=1))==False]=(X[np.isnan(np.sum(X,axis=1))==False] - np.mean(X[np.isnan(np.sum(X,axis=1))==False], axis=0))/np.std(X[np.isnan(np.sum(X,axis=1))==False], axis=0)
+    X[np.isnan(X)]=-1.0
+    # specify the model and the training parameters
+    model_fp = os.path.join(args.results_path, 'models', args.name + '_Iter-{}-Step1')
+    Model = ef.archs.DNN
+    print("DNN size",args.F_sizes)
+    det_mc_args = {'input_dim': len(genkeys), 'dense_sizes': args.F_sizes,
+                'patience': args.patience, 'filepath': model_fp, 'save_weights_only': args.save_full_model,
+                'modelcheck_opts': {'save_best_only': args.save_best_only, 'verbose': 0}}
+    fitargs = {'batch_size': args.batch_size, 'epochs': args.epochs, 'verbose': args.verbose,
+               'weight_clip_min': args.weight_clip_min, 'weight_clip_max': args.weight_clip_max}
+
+    ndata, nsim = np.count_nonzero(Y[:,1]), np.count_nonzero(Y[:,0])
+    wdata = np.ones(ndata)
+    if args.dataweight is not None:
+      dataweight = np.load(DATAWEIGHT[args.dataweight],allow_pickle=True)
+      wdata *= dataweight[-1]
+    winit = np.sum(wdata)/nsim*np.ones(nsim)
+    ws = omnifold.omnifold_sys(X, Y, wdata, winit, (Model, det_mc_args),
+                  fitargs, val=args.val_frac, trw_ind=args.step2_ind,
+                  weights_filename=os.path.join(args.results_path, 'weights', args.name),ensemble=args.ensemble)
+
+    print('Finished ManyFold {} in {:.3f}s\n'.format(i, time.time() - start))
+    print("Weight in ",os.path.join(args.results_path, 'weights', args.name))
+
 
 def train_unifold(i):
     keys = ['nch','spherocity','thrust','broaden','transversespherocity','transversethrust','isotropy','pt']
     recokeys = ['reco_ntrk','reco_spherocity','reco_thrust','reco_broaden','reco_transversespherocity','reco_transversethrust','reco_isotropy','reco_pt']
     genkeys = ['gen_nch','gen_spherocity','gen_thrust','gen_broaden','gen_transversespherocity','gen_transversethrust','gen_isotropy','gen_pt']
+    #keys = ['spherocity','thrust','broaden','transversespherocity','transversethrust','isotropy']
+    #recokeys = ['reco_spherocity','reco_thrust','reco_broaden','reco_transversespherocity','reco_transversethrust','reco_isotropy']
+    #genkeys = ['gen_spherocity','gen_thrust','gen_broaden','gen_transversespherocity','gen_transversethrust','gen_isotropy']
 
     #keys=["transversespherocity","transversethrust"]
     #recokeys=["reco_transversespherocity","reco_transversethrust"]
     #genkeys=["gen_transversespherocity","gen_transversethrust"]
 
-    mc_preproc = np.load(os.path.join(args.data_path, FILENAMES[args.dataset_mc]), allow_pickle=True)
-    real_preproc = np.load(os.path.join(args.data_path, FILENAMES[args.dataset_data]), allow_pickle=True)
+
+    if  isinstance(FILENAMES[args.dataset_mc],list):
+      mc_preproc_list = [np.load(os.path.join(args.data_path, set_mc), allow_pickle=True,encoding="latin1") for set_mc in FILENAMES[args.dataset_mc]]
+      mc_preproc = { k: np.concatenate([mc[k] for mc in mc_preproc_list],axis=0)
+                     for k in recokeys+genkeys+['charged']+['tracks']}
+      del mc_preproc_list
+    else:
+      mc_preproc = np.load(os.path.join(args.data_path, FILENAMES[args.dataset_mc]), allow_pickle=True,encoding="latin1")
+    if  isinstance(FILENAMES[args.dataset_data],list):
+      real_preproc_list = [np.load(os.path.join(args.data_path, set_data), allow_pickle=True,encoding="latin1") for set_data in FILENAMES[args.dataset_data]]
+      real_preproc = { k: np.concatenate([data[k] for data in real_preproc_list],axis=0)
+                     for k in recokeys+['tracks']}
+      del real_preproc_list
+    else:
+      real_preproc = np.load(os.path.join(args.data_path, FILENAMES[args.dataset_data]), allow_pickle=True,encoding="latin1")
+
+
     # UniFold
     for (key,recokey,genkey) in zip(keys,recokeys,genkeys):
         start = time.time()
@@ -384,23 +933,30 @@ def train_unifold(i):
         # apply the unifold technique to this one dimensional space
         ndata, nsim = np.count_nonzero(Y_det[:,1]), np.count_nonzero(Y_det[:,0])
         wdata = np.ones(ndata)
+        if args.dataweight is not None:
+          dataweight = np.load(DATAWEIGHT[args.dataweight],allow_pickle=True)
+          wdata *= dataweight[-1]
         if args.bootstrap:
           np.random.seed(args.bsseed)
           wdata=wdata*np.random.poisson(1.0,len(wdata))
           wdata_path=os.path.join(args.results_path, 'weights', ob_filename+"_dataweight.npy")
           np.save(wdata_path,wdata)
-        winit = ndata/nsim*np.ones(nsim)
+        winit = np.sum(wdata)/nsim*np.ones(nsim)
         if args.MCbootstrap:
           np.random.seed(args.MCbsseed)
           for sys in SYSWEIGHTS[args.machine].keys():
             if SYSWEIGHTS[args.machine][sys] != '':
-              wMC_weight = np.load(SYSWEIGHTS[args.machine][sys]+'/weights/UniFold_DNN_{}_Rep-0.npy'.format(key),allow_pickle=True)
-              winit *= np.power(wMC_weight[-1],np.random.normal())
+              wMC_weight = np.load(SYSWEIGHTS[args.machine][sys],allow_pickle=True)[-1]
+              wMC_weight *= len(wMC_weight)/np.sum(wMC_weight)
+              winit *= np.power(wMC_weight,np.random.standard_normal(len(wMC_weight)))
             else:
               winit *= np.random.poisson(1.0,nsim)
+        if args.preweight:
+          preweightMC = np.load(PREWEIGHTS[args.machine],allow_pickle=True)
+          winit = preweightMC[-1]
         ws = omnifold.omnifold(X_gen, Y_gen, X_det, Y_det, wdata, winit, (Model, det_args), (Model, mc_args), 
                       fitargs, val=args.val_frac, it=args.unfolding_iterations, trw_ind=args.step2_ind,
-                      weights_filename=os.path.join(args.results_path, 'weights', ob_filename))
+                      weights_filename=os.path.join(args.results_path, 'weights', ob_filename),ensemble=args.ensemble)
 
         print('Finished UniFold {} for {} in {:.3f}s\n'.format(i, key, time.time() - start))
 
@@ -409,7 +965,7 @@ def pad_events(events, val=0, max_length=None):
     if max_length is None:
         max_length = max(event_lengths)
     return np.asarray([np.vstack((event, val*np.ones((max_length - ev_len, event.shape[1]))))
-                       for event,ev_len in zip(events, event_lengths)])
+                       for event,ev_len in zip(events, event_lengths)],dtype=np.float32)
 
 def get_max_length(events):
     return max([event.shape[0] for event in events])

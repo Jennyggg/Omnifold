@@ -6,7 +6,7 @@ import time
 #from mytrain import *
 import energyflow as ef
 import numpy as np
-
+import copy
 # DCTR, reweights positive distribution to negative distribution
 # X: features
 # Y: categorical labels
@@ -17,13 +17,18 @@ def reweight(X, Y, w, model, filepath, fitargs, val_data=None):
     # permute the data, fit the model, and get preditions
     #perm = np.random.permutation(len(X))
     #model.fit(X[perm], Y[perm], sample_weight=w[perm], **fitargs)
-    val_dict = {'validation_data': val_data} if val_data is not None else {}
+    if val_data is not None:
+      w_val = copy.deepcopy(val_data[2])
+      w_val[val_data[1][:,0]==0] = w_val[val_data[1][:,0]==0] * (np.sum(w_val[val_data[1][:,0]==1])/np.sum(w_val[val_data[1][:,0]==0]))
+    val_dict = {'validation_data': (val_data[0],val_data[1],w_val)} if val_data is not None else {}
     fitargs_tf={}
     for argkey in fitargs.keys():
       if "weight_clip" not in argkey:
         fitargs_tf[argkey]=fitargs[argkey]
     preds_ensemble=[]
     ensemble=1
+    w_fit = copy.deepcopy(w)
+    w_fit[Y[:,0]==0] = w_fit[Y[:,0]==0]*(np.sum(w_fit[Y[:,0]==1])/np.sum(w_fit[Y[:,0]==0]))
     if isinstance(model,list):
       ensemble=len(model)
     for i_ensemble in range(ensemble):
@@ -37,7 +42,7 @@ def reweight(X, Y, w, model, filepath, fitargs, val_data=None):
         else:
           model_ensemble=model
           filepath_ensemble=filepath
-        model_ensemble.fit(X, Y, sample_weight=w, **fitargs_tf, **val_dict)
+        model_ensemble.fit(X, Y, sample_weight=w_fit, **fitargs_tf, **val_dict)
         model_ensemble.save_weights(filepath_ensemble)
         preds = model_ensemble.predict(X, batch_size=fitargs.get('batch_size', 500))[:,1]
         #preds = model.predict(X, batch_size=10*fitargs.get('batch_size', 500))[:,1]
@@ -61,13 +66,18 @@ def reweight_acc_eff(X, Y, w, model,filepath, fitargs, val_data=None, apply_data
     # permute the data, fit the model, and get preditions
     #perm = np.random.permutation(len(X))
     #model.fit(X[perm], Y[perm], sample_weight=w[perm], **fitargs)
-    val_dict = {'validation_data': val_data} if val_data is not None else {}
+    if val_data is not None:
+      w_val = copy.deepcopy(val_data[2])
+      w_val[val_data[1][:,0]==0] = w_val[val_data[1][:,0]==0] * (np.sum(w_val[val_data[1][:,0]==1])/np.sum(w_val[val_data[1][:,0]==0]))
+    val_dict = {'validation_data': (val_data[0],val_data[1],w_val)} if val_data is not None else {}
     fitargs_tf={}
     for argkey in fitargs.keys():
       if "weight_clip" not in argkey:
         fitargs_tf[argkey]=fitargs[argkey]
     preds_ensemble=[]
     ensemble=1
+    w_fit = copy.deepcopy(w)
+    w_fit[Y[:,0]==0] = w_fit[Y[:,0]==0]*(np.sum(w_fit[Y[:,0]==1])/np.sum(w_fit[Y[:,0]==0]))
     if isinstance(model,list):
       ensemble=len(model)
     for i_ensemble in range(ensemble):
@@ -80,7 +90,7 @@ def reweight_acc_eff(X, Y, w, model,filepath, fitargs, val_data=None, apply_data
         else:
           model_ensemble=model
           filepath_ensemble=filepath
-        model_ensemble.fit(X, Y, sample_weight=w, **fitargs_tf, **val_dict)
+        model_ensemble.fit(X, Y, sample_weight=w_fit, **fitargs_tf, **val_dict)
         model_ensemble.save_weights(filepath_ensemble)
         if apply_data is not None:
           preds = model_ensemble.predict(apply_data[0],batch_size=fitargs.get('batch_size', 500))[:,1]
@@ -98,7 +108,7 @@ def reweight_acc_eff(X, Y, w, model,filepath, fitargs, val_data=None, apply_data
 # it: number of iterations
 # trw_ind: which previous weights to use in second step, 0 means use initial, -2 means use previous
 def omnifold(X_gen_i, Y_gen_i, X_det_i, Y_det_i, wdata, winit, det_model, mc_model, fitargs, 
-             val=0.2, it=10, weights_filename=None, trw_ind=0, delete_global_arrays=False,ensemble=1):
+             val=0.2, it=10, weights_filename=None, trw_ind=0, delete_global_arrays=False,ensemble=1,factor=1.0):
 
     # get arrays (possibly globally)
     X_gen_arr = globals()[X_gen_i] if isinstance(X_gen_i, str) else X_gen_i
@@ -202,7 +212,7 @@ def omnifold(X_gen_i, Y_gen_i, X_det_i, Y_det_i, wdata, winit, det_model, mc_mod
         #ws.append(rw[len(ws[-1]):]*np.sum(ws[trw_ind])/np.sum(rw[len(ws[-1]):]))
         # save the weights if specified
         if weights_filename is not None:
-            np.save(weights_filename, ws)
+            np.save(weights_filename, np.array(ws)*factor)
         print("save weight ",weights_filename) 
     return ws
 
@@ -215,7 +225,7 @@ def omnifold(X_gen_i, Y_gen_i, X_det_i, Y_det_i, wdata, winit, det_model, mc_mod
 # it: number of iterations
 # trw_ind: which previous weights to use in second step, 0 means use initial, -2 means use previous
 def omnifold_acceptance_efficiency(X_gen_i, Y_gen_i, X_det_i, Y_det_i,X_det_acc_i,Y_det_acc_i, wdata, winit, gen_passgen, gen_passreco, det_passgen, det_passreco,det_passgen_acc,det_passreco_acc, det_model, mc_model,mc_model_1b,det_model_2b, fitargs,
-             val=0.2, it=10, weights_filename=None, trw_ind=0, delete_global_arrays=False,ensemble=1):
+             val=0.2, it=10, weights_filename=None, trw_ind=0, delete_global_arrays=False,ensemble=1,factor=1.0):
 
     # get arrays (possibly globally)
     X_gen_arr = globals()[X_gen_i] if isinstance(X_gen_i, str) else X_gen_i
@@ -322,6 +332,9 @@ def omnifold_acceptance_efficiency(X_gen_i, Y_gen_i, X_det_i, Y_det_i,X_det_acc_
     det_acc_mask_reco_gen = det_passreco_acc*det_passgen_acc
     det_acc_mask_reco_nogen = det_passreco_acc*(det_passgen_acc==False)
     det_acc_mask_gen_noreco = det_passgen_acc*(det_passreco_acc==False)
+    det_acc_mask_nogen_noreco = (det_passgen_acc==False)*(det_passreco_acc==False)
+
+
 
     det_acc_mask_reco_train, det_acc_mask_reco_val = det_passreco_acc[perm_det_acc[:-nval_det_acc]],det_passreco_acc[perm_det_acc[-nval_det_acc:]]
     det_acc_mask_gen_train, det_acc_mask_gen_val = det_passgen_acc[perm_det_acc[:-nval_det_acc]],det_passgen_acc[perm_det_acc[-nval_det_acc:]]
@@ -455,16 +468,18 @@ def omnifold_acceptance_efficiency(X_gen_i, Y_gen_i, X_det_i, Y_det_i,X_det_acc_
         print("weight step 2b",rw[len(ws[-1]):])
         ws.append(rw[len(ws[-1]):]*rw_step2_tmp)
         print("weight now:",ws[-1])
+        for weight_index in range(-4,0):
+          ws[weight_index][det_acc_mask_nogen_noreco[len(ws[-1]):]] = ws[0][det_acc_mask_nogen_noreco[len(ws[-1]):]]
         #ws.append(rw[len(ws[-1]):]*np.sum(ws[trw_ind])/np.sum(rw[len(ws[-1]):]))
         # save the weights if specified
         if weights_filename is not None:
-            np.save(weights_filename, ws)
+            np.save(weights_filename, np.array(ws)*factor)
         print("save weight ",weights_filename)
     return ws
 
 
 def omnifold_sys(X_i, Y_i, wdata, winit, det_mc_model, fitargs,
-             val=0.2,  weights_filename=None, trw_ind=0, delete_global_arrays=False,ensemble=1):
+             val=0.2,  weights_filename=None, trw_ind=0, delete_global_arrays=False,ensemble=1,factor=1.0):
 
     # get arrays (possibly globally)
     X_arr = globals()[X_i] if isinstance(X_i, str) else X_i
@@ -509,7 +524,7 @@ def omnifold_sys(X_i, Y_i, wdata, winit, det_mc_model, fitargs,
                   fitargs, val_data=(X_val, Y_val, w_val))[invperm]
     ws.append(rw[len(wdata):])
     if weights_filename is not None:
-        np.save(weights_filename, ws)
+        np.save(weights_filename, np.array(ws)*factor)
     print("save weight ",weights_filename)
     return ws
 
