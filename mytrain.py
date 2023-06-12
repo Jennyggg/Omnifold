@@ -8,11 +8,12 @@ import energyflow as ef
 import numpy as np
 from scipy import stats
 import copy
+import json
 # default paths
 MACHINES = {
     'multifold': {
         'data_path': '/pnfs/psi.ch/cms/trivcat/store/user/jinw/NPZ/',
-        'results_path': '/work/jinw/omnifold/OmniFold/results_multifold_maxweight10_MCEPOS_unfolddata_1p3M_ensemble4_normXS'
+        'results_path': '/work/jinw/omnifold/OmniFold/results_multifold_maxweight10_MCEPOS_unfoldCP1_1p3M_ensemble4_normXS_coverage_stresstest'
     },
     'omnifold': {
         'data_path': '/work/jinw/omnifold/OmniFold/preselect',
@@ -109,8 +110,22 @@ SYSWEIGHTS = {
 
 PREWEIGHTS = {
     'omnifold':'/work/jinw/omnifold/OmniFold/results_multifold_maxweight_MCCP1_tuneES_mass_ntrk/weights/ManyFold_DNN_Rep-0.npy',
-    'multifold':'/work/jinw/omnifold/OmniFold/results_multifold_maxweight10_MCEPOS_unfoldCP1_1p3M_genweight_ensemble4/weights/ManyFold_DNN_Rep-0.npy',
+    'multifold':{
+      'CP1_gen':'/work/jinw/omnifold/OmniFold/results_multifold_maxweight10_MCEPOS_unfoldCP1_1p3M_genweight_ensemble4_XSnorm/weights/ManyFold_DNN_Rep-0.npy',
+      'CP1_migration':'/work/jinw/omnifold/OmniFold/results_multifold_maxweight10_MCEPOS_unfoldCP1genweight2EPOS_1p3M_sysweight_ensemble4_XSnorm/weights/ManyFold_DNN_Rep-0.npy',
+      'CP5_gen':'/work/jinw/omnifold/OmniFold/results_multifold_maxweight10_MCEPOS_unfoldCP5_1p3M_genweight_ensemble4_XSnorm/weights/ManyFold_DNN_Rep-0.npy',
+      'CP5_migration':'/work/jinw/omnifold/OmniFold/results_multifold_maxweight10_MCEPOS_unfoldCP5genweight2EPOS_1p3M_sysweight_ensemble4_XSnorm/weights/ManyFold_DNN_Rep-0.npy',
+      'default':'/work/jinw/omnifold/OmniFold/results_multifold_maxweight10_MCEPOS_unfoldCP5_1p3M_genweight_ensemble4_XSnorm/weights/ManyFold_DNN_Rep-0.npy'
+    },
     'unifold':'/work/jinw/omnifold/OmniFold/results_multifold_maxweight_MCCP1_tuneES_mass_ntrk/weights/ManyFold_DNN_Rep-0.npy'
+}
+
+
+WEIGHTSCALE = {
+  'CP1_gen':1.0,
+  'CP1_migration':1.0,
+  'CP5_gen':0.3,
+  'CP5_migration':0.3
 }
 
 DATAWEIGHT = {
@@ -122,7 +137,16 @@ DATAWEIGHT = {
 def normalization_factor(winit,norm = 67500000): #inelastic pp XS 67.5 mb reported at https://arxiv.org/pdf/1802.02613.pdf Here the default unit is pb
   return norm/np.sum(winit)
   
+def normalization_factor_to_fiducialXS(winit,pass_gen,fiducialXS=45264113.10728745): # 1325065 out of 1976000 events in EPOS passed the gen-level selection, default fiducial XS calcualted based on the assumed total XS 67.5 mb.
+  return fiducialXS/np.sum(winit[pass_gen])
 
+
+def get_obs(data_dict,obs):
+  if "/" in obs:
+    obs1, obs2 = obs.split("/")
+    return data_dict[obs1]/data_dict[obs2]
+  else:
+    return data_dict[obs]
 
 def main(arg_list):
 
@@ -137,11 +161,11 @@ def main(arg_list):
 
     # handle names
     if args.unfolding == 'omnifold':
-        name = args.name + 'OmniFold_{}_Rep-{}'
+        name = 'OmniFold_{}_Rep-{}'
     elif args.unfolding == 'manyfold':
-        name = args.name + 'ManyFold_DNN_Rep-{}'
+        name = 'ManyFold_DNN_Rep-{}'
     elif args.unfolding == 'unifold':
-        name = args.name + 'UniFold_DNN_{}'
+        name = 'UniFold_DNN_{}'
     if args.bootstrap:
       name+="_bs_"+str(args.bsseed)
     if args.MCbootstrap:
@@ -150,7 +174,9 @@ def main(arg_list):
     # iteration loop
     for i in range(args.start_iter, args.max_iter):
         if args.unfolding == 'omnifold':
-            args.name = name.format(args.omnifold_arch, i)
+            name = name.format(args.omnifold_arch, i)
+            args.name_nominal = name
+            args.name = args.name+name
             if args.dosysweight:
               train_omnifold_fitsys(i)
             elif args.dogenreweight:
@@ -158,7 +184,9 @@ def main(arg_list):
             else:
               train_omnifold(i)
         elif args.unfolding == 'manyfold':
-            args.name = name.format(i)
+            name = name.format(i)
+            args.name_nominal = name
+            args.name = args.name+name
             if args.dosysweight:
               train_manyfold_fitsys(i)
             elif args.dogenreweight:
@@ -168,7 +196,9 @@ def main(arg_list):
             else:  
               train_manyfold(i)
         elif args.unfolding == 'unifold':
-            args.name = name + '_Rep-{}'.format(i)
+            name = name + '_Rep-{}'.format(i)
+            args.name_nominal = name
+            args.name = args.name+name
             train_unifold(i)
 
 def construct_parser(args):
@@ -215,11 +245,12 @@ def construct_parser(args):
     parser.add_argument('--MCbsseed', type=int,default=1)
  
     parser.add_argument('--preweight', action='store_true')
+    parser.add_argument('--preweight-choice',type=str,choices = ['CP1_gen','CP1_migration','CP5_gen','CP5_migration','default'],default='default')
 
     parser.add_argument('--dosysweight', action='store_true')
     parser.add_argument('--dogenreweight',action='store_true')
 
-    parser.add_argument('--dataweight',default=None,choices=[None,'gen_CP5_to_EPOS_multifold','gen_EPOS_to_CP1_multifold','gen_CP1_to_EPOS_multifold','gen_CP5_to_EPOS_multifold'])
+    parser.add_argument('--dataweight',default=None,type=str)
 
     parser.add_argument('--eff-acc',action='store_true')
 
@@ -300,15 +331,29 @@ def train_omnifold(i):
     ndata, nsim = np.count_nonzero(Y_det[:,1]), np.count_nonzero(Y_det[:,0])
     wdata = np.ones(ndata)
     if args.dataweight is not None:
-      dataweight = np.load(DATAWEIGHT[args.dataweight],allow_pickle=True)
-      wdata *= dataweight[-1][real_pass_reco]
+      if args.dataweight in DATAWEIGHT.keys():
+        dataweight = np.load(DATAWEIGHT[args.dataweight],allow_pickle=True)
+      else:
+        dataweight = np.load(args.dataweight,allow_pickle=True)
+      if np.shape(np.shape(dataweight))[0] == 2:
+        wdata *= dataweight[-1]
+      else:
+        wdata *= dataweight
     if args.bootstrap:
       np.random.seed(args.bsseed)
       wdata=wdata*np.random.poisson(1.0,len(wdata))
       wdata_path=os.path.join(args.results_path, 'weights', args.name+"_dataweight.npy")
-      np.save(wdata_path,wdata)
-    winit = np.sum(wdata)/nsim*np.ones(nsim)
-    factor = normalization_factor(winit)
+      if os.path.exists(wdata_path):
+        wdata = np.load(wdata_path)
+      else:
+        np.save(wdata_path,wdata)
+    if args.preweight:
+      preweightMC = np.load(PREWEIGHTS[args.machine][args.preweight_choice],allow_pickle=True)
+      winit = preweightMC[-1]
+      factor = 1.0
+    else:
+      winit = np.sum(wdata)/nsim*np.ones(nsim)
+      factor = normalization_factor(winit)
     if args.MCbootstrap:
       np.random.seed(args.MCbsseed)
       for sys in SYSWEIGHTS[args.machine].keys():
@@ -319,9 +364,6 @@ def train_omnifold(i):
         else:
           winit *= np.random.poisson(1.0,nsim)
 
-    if args.preweight:
-      preweightMC = np.load(PREWEIGHTS[args.machine],allow_pickle=True)
-      winit = preweightMC[-1]
 
     ws = omnifold.omnifold(X_gen, Y_gen, X_det, Y_det, wdata, winit, (Model, det_args), (Model, mc_args), fitargs, 
                   val=args.val_frac, it=args.unfolding_iterations, trw_ind=args.step2_ind,
@@ -405,8 +447,14 @@ def train_omnifold_fitsys(i):
     ndata, nsim = np.count_nonzero(Y[:,1]), np.count_nonzero(Y[:,0])
     wdata = np.ones(ndata)
     if args.dataweight is not None:
-      dataweight = np.load(DATAWEIGHT[args.dataweight],allow_pickle=True)
-      wdata *= dataweight[-1]
+      if args.dataweight in DATAWEIGHT.keys():
+        dataweight = np.load(DATAWEIGHT[args.dataweight],allow_pickle=True)
+      else:
+        dataweight = np.load(args.dataweight,allow_pickle=True)
+      if np.shape(np.shape(dataweight))[0] == 2:
+        wdata *= dataweight[-1]
+      else:
+        wdata *= dataweight
     winit = np.sum(wdata)/nsim*np.ones(nsim)
     factor = normalization_factor(winit)
     ws = omnifold.omnifold_sys(X, Y, wdata, winit, (Model, det_mc_args),
@@ -467,8 +515,14 @@ def train_omnifold_fitgen(i):
     ndata, nsim = np.count_nonzero(Y[:,1]), np.count_nonzero(Y[:,0])
     wdata = np.ones(ndata)
     if args.dataweight is not None:
-      dataweight = np.load(DATAWEIGHT[args.dataweight],allow_pickle=True)
-      wdata *= dataweight[-1]
+      if args.dataweight in DATAWEIGHT.keys():
+        dataweight = np.load(DATAWEIGHT[args.dataweight],allow_pickle=True)
+      else:
+        dataweight = np.load(args.dataweight,allow_pickle=True)
+      if np.shape(np.shape(dataweight))[0] == 2:
+        wdata *= dataweight[-1]
+      else:
+        wdata *= dataweight
     winit = np.sum(wdata)/nsim*np.ones(nsim)
     factor = normalization_factor(winit)
     ws = omnifold.omnifold_sys(X, Y, wdata, winit, (Model, det_mc_args),
@@ -596,15 +650,29 @@ def train_manyfold(i):
     ndata, nsim = np.count_nonzero(Y_det[:,1]), np.count_nonzero(Y_det[:,0])
     wdata = np.ones(ndata)
     if args.dataweight is not None:
-      dataweight = np.load(DATAWEIGHT[args.dataweight],allow_pickle=True)
-      wdata *= dataweight[-1][real_pass_reco]
+      if args.dataweight in DATAWEIGHT.keys():
+        dataweight = np.load(DATAWEIGHT[args.dataweight],allow_pickle=True)
+      else:
+        dataweight = np.load(args.dataweight,allow_pickle=True)
+      if np.shape(np.shape(dataweight))[0] == 2:
+        wdata *= dataweight[-1]
+      else:
+        wdata *= dataweight
     if args.bootstrap:
       np.random.seed(args.bsseed)
       wdata=wdata*np.random.poisson(1.0,len(wdata))
       wdata_path=os.path.join(args.results_path, 'weights', args.name+"_dataweight.npy")
-      np.save(wdata_path,wdata)
-    winit = np.sum(wdata)/nsim*np.ones(nsim)
-    factor = normalization_factor(winit)
+      if os.path.exists(wdata_path):
+        wdata = np.load(wdata_path)
+      else:
+        np.save(wdata_path,wdata)
+    if args.preweight:
+      preweightMC = np.load(PREWEIGHTS[args.machine][args.preweight_choice],allow_pickle=True)
+      winit = preweightMC[-1]
+      factor = 1.0
+    else:
+      winit = np.sum(wdata)/nsim*np.ones(nsim)
+      factor = normalization_factor(winit)
     if args.MCbootstrap:
       np.random.seed(args.MCbsseed)
       for sys in SYSWEIGHTS[args.machine].keys():
@@ -614,9 +682,6 @@ def train_manyfold(i):
           winit *= np.power(wMC_weight/winit/factor,np.random.standard_normal())
         else:
           winit *= np.random.poisson(1.0,nsim)
-    if args.preweight:
-      preweightMC = np.load(PREWEIGHTS[args.machine],allow_pickle=True)
-      winit = preweightMC[-1]    
     ws = omnifold.omnifold(X_gen, Y_gen, X_det, Y_det, wdata, winit, (Model, det_args), (Model, mc_args), 
                   fitargs, val=args.val_frac, it=args.unfolding_iterations, trw_ind=args.step2_ind,
                   weights_filename=os.path.join(args.results_path, 'weights', args.name),ensemble=args.ensemble,factor=factor)
@@ -630,28 +695,31 @@ def train_manyfold_acceptance_efficiency(i):
 
     # which observables to include in manyfold
 
-    recokeys = ['reco_ntrk','reco_spherocity','reco_thrust','reco_broaden','reco_transversespherocity','reco_transversethrust','reco_isotropy','reco_pt']
-    genkeys = ['gen_nch','gen_spherocity','gen_thrust','gen_broaden','gen_transversespherocity','gen_transversethrust','gen_isotropy','gen_pt']
+    recokeys = ['reco_ntrk','reco_spherocity','reco_thrust','reco_broaden','reco_transversespherocity','reco_transversethrust','reco_isotropy','reco_pt','reco_ntrk_eta1/reco_ntrk','reco_ntrk_eta2/reco_ntrk']
+    genkeys = ['gen_nch','gen_spherocity','gen_thrust','gen_broaden','gen_transversespherocity','gen_transversethrust','gen_isotropy','gen_pt','gen_nch_eta1/gen_nch','gen_nch_eta2/gen_nch']
 
     start = time.time()
     print('ManyFolding')
 
     if  isinstance(FILENAMES[args.dataset_mc],list):
       mc_preproc_list = [np.load(os.path.join(args.data_path, set_mc), allow_pickle=True,encoding="latin1") for set_mc in FILENAMES[args.dataset_mc]]
-      mc_preproc = { k: np.concatenate([mc[k] for mc in mc_preproc_list],axis=0)
-                     for k in recokeys+genkeys+['charged']+['tracks']}
+      mc_preproc = { k: np.concatenate([get_obs(mc,k) for mc in mc_preproc_list],axis=0)
+                     for k in recokeys+genkeys}
       del mc_preproc_list
     else:
       mc_preproc = np.load(os.path.join(args.data_path, FILENAMES[args.dataset_mc]), allow_pickle=True,encoding="latin1")
+      mc_preproc = {k: get_obs(mc_prepro,k)
+                    for k in recokeys+genkeys}
 
     if  isinstance(FILENAMES[args.dataset_data],list):
       real_preproc_list = [np.load(os.path.join(args.data_path, set_data), allow_pickle=True, encoding="latin1") for set_data in FILENAMES[args.dataset_data]]
-      real_preproc = { k: np.concatenate([data[k] for data in real_preproc_list],axis=0)
-                     for k in recokeys+['tracks']}
+      real_preproc = { k: np.concatenate([get_obs(data,k) for data in real_preproc_list],axis=0)
+                     for k in recokeys}
       del real_preproc_list
     else:
       real_preproc = np.load(os.path.join(args.data_path, FILENAMES[args.dataset_data]), allow_pickle=True,encoding="latin1")
-
+      real_preproc = {k: get_obs(real_preproc,k)
+                      for k in recokeys}
     real_pass_reco=(np.isnan(real_preproc['reco_ntrk'])==False)
     for k in real_preproc.keys():
       real_preproc[k]=real_preproc[k][real_pass_reco]
@@ -699,6 +767,7 @@ def train_manyfold_acceptance_efficiency(i):
     #model1b_fp = os.path.join(args.results_path, 'models', args.name + '_Iter-{}-Step1b')
     #model2_fp = os.path.join(args.results_path, 'models', args.name + '_Iter-{}-Step2')
     #model2b_fp = os.path.join(args.results_path, 'models', args.name + '_Iter-{}-Step2b')
+    # FIXME: Use the lines below when doing bootstraps
     model1_fp = args.name + '_Iter-{}-Step1'
     model1b_fp = args.name + '_Iter-{}-Step1b'
     model2_fp = args.name + '_Iter-{}-Step2'
@@ -724,18 +793,57 @@ def train_manyfold_acceptance_efficiency(i):
     ndata, nsim = np.count_nonzero(Y_det[:,1]), np.count_nonzero(Y_det[:,0])
     wdata = np.ones(ndata)
     if args.dataweight is not None:
-      dataweight = np.load(DATAWEIGHT[args.dataweight],allow_pickle=True)
-      wdata *= dataweight[-1][real_pass_reco]
+      if args.dataweight in DATAWEIGHT.keys():
+        dataweight = np.load(DATAWEIGHT[args.dataweight],allow_pickle=True)
+      else:
+        dataweight = np.load(args.dataweight,allow_pickle=True)
+      if np.shape(np.shape(dataweight))[0] == 2:
+        wdata *= dataweight[-1]
+      else:
+        wdata *= dataweight
     if args.bootstrap:
       np.random.seed(args.bsseed)
       wdata=wdata*np.random.poisson(1.0,len(wdata))
-      wdata_path=os.path.join(args.results_path, 'weights', args.name+"_dataweight.npy")
-      np.save(wdata_path,wdata)
+      wdata_path=os.path.join(args.results_path, 'weights', args.name_nominal+"_dataweight.npy")
+      if os.path.exists(wdata_path):
+        wdata = np.load(wdata_path)
+      else:
+        np.save(wdata_path,wdata)
+    #if args.preweight:
+    #  preweightMC = np.load(PREWEIGHTS[args.machine][args.preweight_choice],allow_pickle=True)
+    #  winit = preweightMC[-1]
+    #  #factor = np.sum(winit)/np.sum(wdata)
+    #  winit = winit * (np.sum(wdata)/np.sum(winit))
+    #  factor = normalization_factor_to_fiducialXS(winit,mc_pass_gen)
+    #else:
     winit = np.sum(wdata)/nsim*np.ones(nsim)
+    #factor = normalization_factor(winit)
+    factor = normalization_factor_to_fiducialXS(winit,mc_pass_gen)
     winit_origin = copy.deepcopy(winit)
-    factor = normalization_factor(winit)
+    if args.preweight:
+      preweightMC = np.load(PREWEIGHTS[args.machine][args.preweight_choice],allow_pickle=True)[-1]
+      weight_scale = WEIGHTSCALE[args.preweight_choice] if args.preweight_choice in WEIGHTSCALE.keys() else 1.0
+      winit *= np.power(preweightMC/winit_origin/factor,weight_scale)
+
     if args.MCbootstrap:
       np.random.seed(args.MCbsseed)
+      nuissance_sys_path = os.path.join(args.results_path, 'weights', args.name_nominal+"_nuissance_sys.json")
+      if os.path.exists(nuissance_sys_path):
+        with open(nuissance_sys_path,'r') as f_nuissance_sys:
+          nuissance_sys = json.load(f_nuissance_sys)
+      else:
+        nuissance_sys = {}
+        for sys in SYSWEIGHTS[args.machine].keys():
+          if SYSWEIGHTS[args.machine][sys] != '':
+            if sys in WEIGHTSCALE.keys():
+              weight_scale = WEIGHTSCALE[sys]
+            else:
+              weight_scale = 1.0
+            nuissance_sys[sys] = np.random.normal(scale=weight_scale)
+          else:
+            nuissance_sys[sys] = np.random.poisson(1.0,nsim).tolist()
+        with open(nuissance_sys_path , 'w') as fp:
+          json.dump(nuissance_sys, fp)
       for sys in SYSWEIGHTS[args.machine].keys():
         print("before weighting")
         print("winit*factor:",winit*factor,"winit*factor sum:",np.sum(winit*factor))
@@ -746,20 +854,22 @@ def train_manyfold_acceptance_efficiency(i):
           #print("winit_origin*factor:",winit_origin*factor,"winit_origin*factor sum:",np.sum(winit_origin*factor))
           #print("wMC_weight/winit_origin/factor:",wMC_weight/winit_origin/factor,"wMC_weight/winit_origin/factor sum:",np.sum(wMC_weight/winit_origin/factor))
           #print("np.power(wMC_weight/winit_origin/factor,np.random.standard_normal()):",np.power(wMC_weight/winit_origin/factor,np.random.standard_normal()))
-          winit *= np.power(wMC_weight/winit_origin/factor,np.random.standard_normal())
+          #if args.preweight and args.preweight_choice == sys:
+          #  weight_scale = WEIGHTSCALE[sys] if sys in WEIGHTSCALE.keys() else 1.0
+          #  shift = nuissance_sys[sys] + (weight_scale if nuissance_sys[sys]>0 else -weight_scale)
+          #else:
+          shift = nuissance_sys[sys]
+          winit *= np.power(wMC_weight/winit_origin/factor,shift)
           #winit += (wMC_weight/factor-winit_origin)*np.random.standard_normal()
           #winit += (wMC_weight/factor-winit_origin)*stats.truncnorm.rvs(-1,1)
           #winit += (wMC_weight/factor-winit_origin)*np.random.uniform(-1,1)
         else:
-          print(np.random.poisson(1.0,nsim))
-          winit *= np.random.poisson(1.0,nsim)
+          #print(np.random.poisson(1.0,nsim))
+          winit *= np.array(nuissance_sys[sys])
         print("after weighting")
         print("winit*factor:",winit*factor,"winit*factor sum:",np.sum(winit*factor))
-    if args.preweight:
-      preweightMC = np.load(PREWEIGHTS[args.machine],allow_pickle=True)
-      winit = preweightMC[-1]
 
-    #factor = normalization_factor(winit)
+    factor = normalization_factor_to_fiducialXS(winit,mc_pass_gen)
 
     os.system("mkdir -p "+os.path.join(args.results_path, 'weights'))
     ws = omnifold.omnifold_acceptance_efficiency(X_gen, Y_gen, X_det, Y_det,X_det_acc_reweight,Y_det_acc_reweight, wdata, winit, gen_pass_gen,gen_pass_reco, det_pass_gen,det_pass_reco,det_pass_gen_acc_reweight,det_pass_reco_acc_reweight,
@@ -808,6 +918,7 @@ def train_manyfold_fitsys(i):
     X = np.asarray([np.concatenate((real_preproc[obkey], mc_preproc[obkey])) for obkey in recokeys+genkeys]).T
     Y = ef.utils.to_categorical(np.concatenate((np.ones(len(real_preproc['reco_ntrk'])), np.zeros(len(mc_preproc['reco_ntrk'])))))
     print(X.shape,Y.shape)
+    mc_pass_gen=(mc_preproc['gen_nch']>2)
     del mc_preproc, real_preproc
 
     # standardize the inputs
@@ -826,11 +937,18 @@ def train_manyfold_fitsys(i):
     ndata, nsim = np.count_nonzero(Y[:,1]), np.count_nonzero(Y[:,0])
     wdata = np.ones(ndata)
     if args.dataweight is not None:
-      dataweight = np.load(DATAWEIGHT[args.dataweight],allow_pickle=True)
-      wdata *= dataweight[-1]
+      if args.dataweight in DATAWEIGHT.keys():
+        dataweight = np.load(DATAWEIGHT[args.dataweight],allow_pickle=True)
+      else:
+        dataweight = np.load(args.dataweight,allow_pickle=True)
+      if np.shape(np.shape(dataweight))[0] == 2:
+        wdata *= dataweight[-1]
+      else:
+        wdata *= dataweight
     print("data with weight ",DATAWEIGHT[args.dataweight])
     winit = np.sum(wdata)/nsim*np.ones(nsim)
-    factor = normalization_factor(winit)
+    #factor = normalization_factor(winit)
+    factor = normalization_factor_to_fiducialXS(winit,mc_pass_gen)
     ws = omnifold.omnifold_sys(X, Y, wdata, winit, (Model, det_mc_args),
                   fitargs, val=args.val_frac, trw_ind=args.step2_ind,
                   weights_filename=os.path.join(args.results_path, 'weights', args.name),ensemble=args.ensemble,factor=factor)
@@ -844,7 +962,7 @@ def train_manyfold_fitgen(i):
 
     # which observables to include in manyfold
 
-    #recokeys = ['reco_ntrk','reco_spherocity','reco_thrust','reco_broaden','reco_transversespherocity','reco_transversethrust','reco_isotropy','reco_pt']
+    recokeys = ['reco_ntrk','reco_spherocity','reco_thrust','reco_broaden','reco_transversespherocity','reco_transversethrust','reco_isotropy','reco_pt']
     genkeys = ['gen_nch','gen_spherocity','gen_thrust','gen_broaden','gen_transversespherocity','gen_transversethrust','gen_isotropy','gen_pt']
 
     start = time.time()
@@ -853,44 +971,61 @@ def train_manyfold_fitgen(i):
     if  isinstance(FILENAMES[args.dataset_mc],list):
       mc_preproc_list = [np.load(os.path.join(args.data_path, set_mc), allow_pickle=True,encoding="latin1") for set_mc in FILENAMES[args.dataset_mc]]
       mc_preproc = { k: np.concatenate([mc[k] for mc in mc_preproc_list],axis=0)
-                     for k in genkeys}
+                     for k in genkeys+recokeys}
       del mc_preproc_list
     else:
       mc_preproc = np.load(os.path.join(args.data_path, FILENAMES[args.dataset_mc]), allow_pickle=True,encoding="latin1")
     if  isinstance(FILENAMES[args.dataset_data],list):
       real_preproc_list = [np.load(os.path.join(args.data_path, set_data), allow_pickle=True, encoding="latin1") for set_data in FILENAMES[args.dataset_data]]
       real_preproc = { k: np.concatenate([data[k] for data in real_preproc_list],axis=0)
-                     for k in genkeys}
+                     for k in genkeys+recokeys}
       del real_preproc_list
     else:
       real_preproc = np.load(os.path.join(args.data_path, FILENAMES[args.dataset_data]), allow_pickle=True,encoding="latin1")
 
-    X = np.asarray([np.concatenate((real_preproc[obkey], mc_preproc[obkey])) for obkey in genkeys]).T
-    Y = ef.utils.to_categorical(np.concatenate((np.ones(len(real_preproc['gen_nch'])), np.zeros(len(mc_preproc['gen_nch'])))))
-    print(X.shape,Y.shape)
+    X_gen = np.asarray([np.concatenate((real_preproc[obkey], mc_preproc[obkey])) for obkey in genkeys]).T
+    Y_gen = ef.utils.to_categorical(np.concatenate((np.ones(len(real_preproc['gen_nch'])), np.zeros(len(mc_preproc['gen_nch'])))))
+    X_det = np.asarray([np.concatenate((mc_preproc[obkey], mc_preproc[obkey])) for obkey in recokeys]).T
+    Y_det = ef.utils.to_categorical(np.concatenate((np.ones(len(mc_preproc['gen_nch'])), np.zeros(len(mc_preproc['gen_nch'])))))
+    mc_pass_gen=(mc_preproc['gen_nch']>2)
+    real_pass_gen=(real_preproc['gen_nch']>2)
+    gen_pass_gen = np.concatenate((real_pass_gen,mc_pass_gen))
+    mc_pass_reco=(np.isnan(mc_preproc['reco_ntrk'])==False) 
+    det_pass_reco = np.concatenate((mc_pass_reco,mc_pass_reco))
+    det_pass_gen = np.concatenate((mc_pass_gen,mc_pass_gen))
     del mc_preproc, real_preproc
 
     # standardize the inputs
-    X[np.isnan(np.sum(X,axis=1))==False]=(X[np.isnan(np.sum(X,axis=1))==False] - np.mean(X[np.isnan(np.sum(X,axis=1))==False], axis=0))/np.std(X[np.isnan(np.sum(X,axis=1))==False], axis=0)
-    X[np.isnan(X)]=-1.0
+    X_gen[gen_pass_gen]=(X_gen[gen_pass_gen] - np.mean(X_gen[gen_pass_gen], axis=0))/np.std(X_gen[gen_pass_gen], axis=0)
+    X_det[det_pass_reco]=(X_det[det_pass_reco] - np.mean(X_det[det_pass_reco], axis=0))/np.std(X_det[det_pass_reco], axis=0)
     # specify the model and the training parameters
-    model_fp = os.path.join(args.results_path, 'models', args.name + '_Iter-{}-Step1')
+    model1_fp = os.path.join(args.results_path, 'models', args.name + '_Iter-{}-Step1')
+    model1b_fp = os.path.join(args.results_path, 'models', args.name + '_Iter-{}-Step1b')
     Model = ef.archs.DNN
     print("DNN size",args.F_sizes)
-    det_mc_args = {'input_dim': len(genkeys), 'dense_sizes': args.F_sizes,
-                'patience': args.patience, 'filepath': model_fp, 'save_weights_only': args.save_full_model,
+    mc_args = {'input_dim': len(genkeys), 'dense_sizes': args.F_sizes,
+                'patience': args.patience, 'filepath': model1_fp, 'save_weights_only': args.save_full_model,
+                'modelcheck_opts': {'save_best_only': args.save_best_only, 'verbose': 0}}
+    det_args_1b = {'input_dim': len(recokeys), 'dense_sizes': args.F_sizes,
+                'patience': args.patience, 'filepath': model1b_fp, 'save_weights_only': args.save_full_model,
                 'modelcheck_opts': {'save_best_only': args.save_best_only, 'verbose': 0}}
     fitargs = {'batch_size': args.batch_size, 'epochs': args.epochs, 'verbose': args.verbose,
                'weight_clip_min': args.weight_clip_min, 'weight_clip_max': args.weight_clip_max}
 
-    ndata, nsim = np.count_nonzero(Y[:,1]), np.count_nonzero(Y[:,0])
+    ndata, nsim = np.count_nonzero(Y_gen[:,1]), np.count_nonzero(Y_gen[:,0])
     wdata = np.ones(ndata)
     if args.dataweight is not None:
-      dataweight = np.load(DATAWEIGHT[args.dataweight],allow_pickle=True)
-      wdata *= dataweight[-1]
+      if args.dataweight in DATAWEIGHT.keys():
+        dataweight = np.load(DATAWEIGHT[args.dataweight],allow_pickle=True)
+      else:
+        dataweight = np.load(args.dataweight,allow_pickle=True)
+      if np.shape(np.shape(dataweight))[0] == 2:
+        wdata *= dataweight[-1]
+      else:
+        wdata *= dataweight
     winit = np.sum(wdata)/nsim*np.ones(nsim)
-    factor = normalization_factor(winit)
-    ws = omnifold.omnifold_sys(X, Y, wdata, winit, (Model, det_mc_args),
+    factor = normalization_factor_to_fiducialXS(winit,mc_pass_gen)
+    ws = omnifold.omnifold_gen(X_gen, Y_gen, X_det, Y_det, wdata, winit,gen_pass_gen, det_pass_gen,det_pass_reco, (Model, mc_args), (Model, det_args_1b),
                   fitargs, val=args.val_frac, trw_ind=args.step2_ind,
                   weights_filename=os.path.join(args.results_path, 'weights', args.name),ensemble=args.ensemble,factor=factor)
 
@@ -963,15 +1098,29 @@ def train_unifold(i):
         ndata, nsim = np.count_nonzero(Y_det[:,1]), np.count_nonzero(Y_det[:,0])
         wdata = np.ones(ndata)
         if args.dataweight is not None:
-          dataweight = np.load(DATAWEIGHT[args.dataweight],allow_pickle=True)
-          wdata *= dataweight[-1]
+          if args.dataweight in DATAWEIGHT.keys():
+            dataweight = np.load(DATAWEIGHT[args.dataweight],allow_pickle=True)
+          else:
+            dataweight = np.load(args.dataweight,allow_pickle=True)
+          if np.shape(np.shape(dataweight))[0] == 2:
+            wdata *= dataweight[-1]
+          else:
+            wdata *= dataweight
         if args.bootstrap:
           np.random.seed(args.bsseed)
           wdata=wdata*np.random.poisson(1.0,len(wdata))
           wdata_path=os.path.join(args.results_path, 'weights', ob_filename+"_dataweight.npy")
-          np.save(wdata_path,wdata)
-        winit = np.sum(wdata)/nsim*np.ones(nsim)
-        factor = normalization_factor(winit)
+          if os.path.exists(wdata_path):
+            wdata = np.load(wdata_path)
+          else:
+            np.save(wdata_path,wdata)
+        if args.preweight:
+          preweightMC = np.load(PREWEIGHTS[args.machine][args.preweight_choice],allow_pickle=True)
+          winit = preweightMC[-1]
+          factor = 1.0
+        else:
+          winit = np.sum(wdata)/nsim*np.ones(nsim)
+          factor = normalization_factor(winit)
         if args.MCbootstrap:
           np.random.seed(args.MCbsseed)
           for sys in SYSWEIGHTS[args.machine].keys():
@@ -981,9 +1130,6 @@ def train_unifold(i):
               winit *= np.power(wMC_weight/winit/factor,np.random.standard_normal())
             else:
               winit *= np.random.poisson(1.0,nsim)
-        if args.preweight:
-          preweightMC = np.load(PREWEIGHTS[args.machine],allow_pickle=True)
-          winit = preweightMC[-1]
         ws = omnifold.omnifold(X_gen, Y_gen, X_det, Y_det, wdata, winit, (Model, det_args), (Model, mc_args), 
                       fitargs, val=args.val_frac, it=args.unfolding_iterations, trw_ind=args.step2_ind,
                       weights_filename=os.path.join(args.results_path, 'weights', ob_filename),ensemble=args.ensemble,factor=factor)

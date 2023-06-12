@@ -19,7 +19,9 @@ def reweight(X, Y, w, model, filepath, fitargs, val_data=None):
     #model.fit(X[perm], Y[perm], sample_weight=w[perm], **fitargs)
     if val_data is not None:
       w_val = copy.deepcopy(val_data[2])
+      print("w_val before normalize",w_val)
       w_val[val_data[1][:,0]==0] = w_val[val_data[1][:,0]==0] * (np.sum(w_val[val_data[1][:,0]==1])/np.sum(w_val[val_data[1][:,0]==0]))
+      print("w_val after normalize",w_val)
     val_dict = {'validation_data': (val_data[0],val_data[1],w_val)} if val_data is not None else {}
     fitargs_tf={}
     for argkey in fitargs.keys():
@@ -28,7 +30,11 @@ def reweight(X, Y, w, model, filepath, fitargs, val_data=None):
     preds_ensemble=[]
     ensemble=1
     w_fit = copy.deepcopy(w)
+    print("w_fit before normalize",w_fit)
+    print("sum 1",np.sum(w_fit[Y[:,0]==1]))
+    print("sum 0",np.sum(w_fit[Y[:,0]==0]))
     w_fit[Y[:,0]==0] = w_fit[Y[:,0]==0]*(np.sum(w_fit[Y[:,0]==1])/np.sum(w_fit[Y[:,0]==0]))
+    print("w_fit after normalize",w_fit)
     if isinstance(model,list):
       ensemble=len(model)
     for i_ensemble in range(ensemble):
@@ -529,8 +535,129 @@ def omnifold_sys(X_i, Y_i, wdata, winit, det_mc_model, fitargs,
     return ws
 
 
+def omnifold_gen(X_gen_i, Y_gen_i, X_det_i, Y_det_i, wdata, winit, gen_passgen, det_passgen, det_passreco,
+                 mc_model, det_model_1b, fitargs,
+             val=0.2,  weights_filename=None, trw_ind=0, delete_global_arrays=False,ensemble=1,factor=1.0):
+    # get arrays (possibly globally)
+    X_gen_arr = globals()[X_gen_i] if isinstance(X_gen_i, str) else X_gen_i
+    Y_gen_arr = globals()[Y_gen_i] if isinstance(Y_gen_i, str) else Y_gen_i
+    X_det_arr = globals()[X_det_i] if isinstance(X_det_i, str) else X_det_i
+    Y_det_arr = globals()[Y_det_i] if isinstance(Y_det_i, str) else Y_det_i
 
+    # initialize the truth weights to the prior
+    ws = [winit]
+
+    # get permutation for det
+    perm_gen = np.random.permutation(len(winit) + len(wdata))
+    invperm_gen = np.argsort(perm_gen)
+    nval_gen = int(val*len(perm_gen))
+
+
+    X_gen_train, X_gen_val = X_gen_arr[perm_gen[:-nval_gen]], X_gen_arr[perm_gen[-nval_gen:]]
+    Y_gen_train, Y_gen_val = Y_gen_arr[perm_gen[:-nval_gen]], Y_gen_arr[perm_gen[-nval_gen:]]
+
+    # remove X, Y
+    if delete_global_arrays:
+        del X_gen_arr, Y_gen_arr
+        if isinstance(X_gen_i, str):
+            del globals()[X_gen_i]
+        if isinstance(Y_gen_i, str):
+            del globals()[Y_gen_i]
+
+    gen_mask_gen_train, gen_mask_gen_val = gen_passgen[perm_gen[:-nval_gen]],gen_passgen[perm_gen[-nval_gen:]]
+
+    # get an initial permutation for det and duplicate (offset) it
+    nval = int(val*len(winit))
+    baseperm0 = np.random.permutation(len(winit))
+    baseperm1 = baseperm0 + len(winit)
+
+    # training examples are at beginning, val at end
+    # concatenate into single train and val perms (shuffle each)
+    trainperm = np.concatenate((baseperm0[:-nval], baseperm1[:-nval]))
+    valperm = np.concatenate((baseperm0[-nval:], baseperm1[-nval:]))
+    np.random.shuffle(trainperm)
+    np.random.shuffle(valperm)
+
+    # get final permutation for det (ensured that the same events end up in val)
+    perm_det = np.concatenate((trainperm, valperm))
+    invperm_det = np.argsort(perm_det)
+    nval_det = int(val*len(perm_det))
+    X_det_train, X_det_val = X_det_arr[perm_det[:-nval_det]], X_det_arr[perm_det[-nval_det:]]
+    Y_det_train, Y_det_val = Y_det_arr[perm_det[:-nval_det]], Y_det_arr[perm_det[-nval_det:]]
+
+    # remove X, Y
+    if delete_global_arrays:
+        del X_det_arr, Y_get_arr
+        if isinstance(X_det_i, str):
+            del globals()[X_det_i]
+        if isinstance(Y_det_i, str):
+            del globals()[Y_det_i]
+
+    det_mask_reco_gen = det_passreco*det_passgen
+    det_mask_reco_nogen = det_passreco*(det_passgen==False)
+    det_mask_gen_noreco = det_passgen*(det_passreco==False)
+
+    det_mask_reco_train, det_mask_reco_val = det_passreco[perm_det[:-nval_det]], det_passreco[perm_det[-nval_det:]]
+    det_mask_gen_train, det_mask_gen_val = det_passgen[perm_det[:-nval_det]], det_passgen[perm_det[-nval_det:]]
+    det_mask_reco_gen_train, det_mask_reco_gen_val = det_mask_reco_gen[perm_det[:-nval_det]],det_mask_reco_gen[perm_det[-nval_det:]]
+    det_mask_reco_nogen_train, det_mask_reco_nogen_val = det_mask_reco_nogen[perm_det[:-nval_det]], det_mask_reco_nogen[perm_det[-nval_det:]]
+    det_mask_gen_noreco_train, det_mask_gen_noreco_val = det_mask_gen_noreco[perm_det[:-nval_det]], det_mask_gen_noreco[perm_det[-nval_det:]]
+
+    # store model filepaths
+    list_model_mc_fp=[]
+    list_model_det_fp_1b=[]
+    model_mc_fp = mc_model[1].get('filepath', None)
+    model_det_fp_1b = det_model_1b[1].get('filepath', None)
+    for i_ensemble in range(ensemble):
+        list_model_mc_fp.append(model_mc_fp+"_ensemble"+str(i_ensemble))
+        list_model_det_fp_1b.append(model_det_fp_1b+"_ensemble"+str(i_ensemble))
+
+    # det filepaths properly
+    list_model_mc_fp_i=[]
+    list_model_mc=[]
+    list_model_det_fp_1b_i=[]
+    list_model_det_1b=[]
+    for i_ensemble in range(ensemble):
+        if model_mc_fp is not None:
+            list_model_mc_fp_i.append(list_model_mc_fp[i_ensemble].format(0))
+            mc_model[1]['filepath'] = list_model_mc_fp_i[i_ensemble] + '_Epoch-{epoch}'
+        if model_det_fp_1b is not None:
+            list_model_det_fp_1b_i.append(list_model_det_fp_1b[i_ensemble].format(0))
+            det_model_1b[1]['filepath'] = list_model_det_fp_1b_i[i_ensemble] + '_Epoch-{epoch}'
+        list_model_mc.append(mc_model[0](**mc_model[1]))
+        list_model_det_1b.append(det_model_1b[0](**det_model_1b[1]))
+
+    # step 1: reweight sim to look like data
+    print("Step 1: reweight at det-level")
+    w = np.concatenate((wdata, ws[-1]))
+    w_train, w_val = w[perm_gen[:-nval_gen]], w[perm_gen[-nval_gen:]]
+
+    rw_perm_gen = np.ones(len(w))
+    rw_perm_gen[gen_passgen[perm_gen]] = reweight(X_gen_train[gen_mask_gen_train], Y_gen_train[gen_mask_gen_train],
+                                          w_train[gen_mask_gen_train], list_model_mc, list_model_mc_fp_i,
+                                          fitargs, val_data=(X_gen_val[gen_mask_gen_val], Y_gen_val[gen_mask_gen_val], w_val[gen_mask_gen_val]))
+    rw = rw_perm_gen[invperm_gen]
+    rw_step1_tmp=rw[len(wdata):]
+    ws.append(rw_step1_tmp)
+
+    print("Step 1b: reweight the not-reconstructed events at gen-level")
+    w = np.concatenate((rw_step1_tmp, ws[trw_ind]))
+    w_train, w_val = w[perm_det[:-nval_det]], w[perm_det[-nval_det:]]
+    rw_perm_det = np.ones(len(w))
+    rw_perm_det[det_mask_reco_nogen[perm_det]] = reweight_acc_eff(X_det_train[det_mask_reco_gen_train], Y_det_train[det_mask_reco_gen_train],
+                    w_train[det_mask_reco_gen_train],list_model_det_1b, list_model_det_fp_1b_i,fitargs,
+                    val_data=(X_det_val[det_mask_reco_gen_val], Y_det_val[det_mask_reco_gen_val], w_val[det_mask_reco_gen_val]),
+                    apply_data=(np.concatenate([X_det_train[det_mask_reco_nogen_train],X_det_val[det_mask_reco_nogen_val]],axis=0),
+                    np.concatenate([w_train[det_mask_reco_nogen_train],w_val[det_mask_reco_nogen_val]])))
+    rw = rw_perm_det[invperm_det]
+    ws.append(rw[len(ws[-1]):]*rw_step1_tmp)
+    print("weight now:",ws[-1])
+    if weights_filename is not None:
+        np.save(weights_filename, np.array(ws)*factor)
+    print("save weight ",weights_filename)
+    return ws
 
 
 if __name__ == '__main__':
     main(sys.argv[1:])
+
